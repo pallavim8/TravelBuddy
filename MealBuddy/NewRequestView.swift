@@ -189,7 +189,8 @@ struct NewRequestView: View {
             "location": userLocation != nil ? [
                 "latitude": userLocation!.latitude,
                 "longitude": userLocation!.longitude
-            ] : NSNull()
+            ] : NSNull(),
+            "invitesSent": []
         ]
         
         db.collection("requests").addDocument(data: requestData) { error in
