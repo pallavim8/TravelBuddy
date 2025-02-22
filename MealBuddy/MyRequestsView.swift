@@ -282,6 +282,7 @@ struct InviteDetailsView: View {
         }
         .padding()
         .background(Color(hex: "#F4F1E1"))
+        
         .cornerRadius(20)
     }
     

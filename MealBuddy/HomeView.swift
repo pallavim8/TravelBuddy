@@ -38,6 +38,13 @@ struct MainTabView: View {
                     Text("Profile")
                 }
                 .tag(3) // Profile tab
+            if selectedTab == 4 {
+                NewRequestView()
+                                .tabItem {
+                                    EmptyView() // This will make the tab 4 hidden
+                                }
+                                .tag(4)
+                        }
         }
         .accentColor(Color(hex: "#CD7741"))
         .navigationBarBackButtonHidden(true)
@@ -210,7 +217,7 @@ struct HomeView: View {
                             
                             Spacer()
                             
-                            NavigationLink(destination: NewRequestView()) {
+                            NavigationLink(destination: MainTabView(startingTab: 4)) {
                                 Image(systemName: "plus.circle.fill")
                                     .font(.largeTitle)
                                     .foregroundColor(.brown)
