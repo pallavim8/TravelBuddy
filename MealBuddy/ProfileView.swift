@@ -35,11 +35,13 @@ struct ProfileView: View {
                     EmptyView()
                 }
                 // Username TextField for editing
-                Text("Edit Profile").font(.title).padding()
+                Text("Edit Profile").font(.largeTitle).padding()
                 Text("Username").font(.headline)
                 TextField("Enter your username", text: $username)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .padding()
+                    .padding(.horizontal, 15)
+                    .padding(.vertical, 10)
+                    .background(Color(hex:"#DBC9B1"))
+                    .cornerRadius(30)
                     .onChange(of: username) { _ in
                         checkForChanges()
                     }
@@ -64,19 +66,26 @@ struct ProfileView: View {
                         }
                     ))
                     .padding(.vertical, 4)
+                    .tint(Color(hex : "#685643"))
+                    .padding(.horizontal, 10)
                 }
                 
                 VStack(alignment: .leading, spacing: 10) {
                     Text("Preferred Radius (miles)")
                         .font(.headline)
-                    Picker("Preferred Radius", selection: $preferredRadius) {
-                        ForEach(radiusOptions, id: \.self) { radius in
-                            Text("\(radius) miles").tag(radius)
+                        .frame(maxWidth: .infinity)
+                    ZStack {
+                        Picker("Preferred Radius", selection: $preferredRadius) {
+                            ForEach(radiusOptions, id: \.self) { radius in
+                                Text("\(radius) miles").tag(radius)
+                            }
                         }
+                        .pickerStyle(MenuPickerStyle())
+                        .padding()
+                        .accentColor(Color(hex: "#685643"))
+                        .frame(maxWidth: .infinity)
+                        .onChange(of: preferredRadius) { _ in checkForChanges()}
                     }
-                    .pickerStyle(MenuPickerStyle())
-                    .padding()
-                    .onChange(of: preferredRadius) { _ in checkForChanges() }
                 }
                 .padding(.horizontal)
                 
@@ -86,6 +95,7 @@ struct ProfileView: View {
                 
                 Slider(value: $priceRange, in: 1...3, step: 1)
                     .padding(.horizontal)
+                    .tint(Color(hex: "#685643"))
                     .onChange(of: priceRange) { _ in
                         checkForChanges()
                     }
@@ -116,32 +126,34 @@ struct ProfileView: View {
                     }
                 }
                 .padding()
-                .background(isChanged ? Color.green : Color.gray)
+                .background(isChanged ? Color(hex: "#685643") : Color(hex: "#c4b5a3"))
                 .foregroundColor(.white)
-                .cornerRadius(8)
+                .cornerRadius(30)
                 .disabled(!isChanged)
                 
                 if isSaved {
                     Text("Preferences Saved!")
-                        .foregroundColor(.green)
+                        .foregroundColor(Color(hex: "#685643"))
                         .font(.headline)
                         .transition(.opacity)
                         .padding()
                 }
             }
             .padding()
+            .background(Color(hex: "#EEE3D2"))
             .onAppear {
                 fetchUserData()
-            }.navigationBarItems(leading: Button(action: {
-                navigateToHome = true
-            }) {
-                HStack {
-                    Image(systemName: "chevron.left") // Default back button icon
-                        .foregroundColor(.blue) // Matches default back button color
-                    Text("Home")
-                        .foregroundColor(.blue)
-                }
-            })
+            }
+//                .navigationBarItems(leading: Button(action: {
+//                navigateToHome = true
+//            }) {
+//                HStack {
+//                    Image(systemName: "chevron.left") // Default back button icon
+//                        .foregroundColor(.blue) // Matches default back button color
+//                    Text("Home")
+//                        .foregroundColor(.blue)
+//                }
+//            })
         }
         .navigationBarBackButtonHidden(true)
             
