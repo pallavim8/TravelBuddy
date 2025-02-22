@@ -22,6 +22,9 @@
 		FC58DE942D6A2410005C0202 /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = FC58DE932D6A2410005C0202 /* FirebaseMessaging */; };
 		FC58DE962D6A242A005C0202 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = FC58DE952D6A242A005C0202 /* FirebaseCore */; };
 		FC58DE982D6A25FB005C0202 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC58DE972D6A25F5005C0202 /* HomeView.swift */; };
+		FC58DE9A2D6A2742005C0202 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC58DE992D6A2742005C0202 /* ProfileView.swift */; };
+		FC58DE9C2D6A27D7005C0202 /* ConnectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC58DE9B2D6A27D7005C0202 /* ConnectView.swift */; };
+		FC58DE9E2D6A27E8005C0202 /* NewRequestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC58DE9D2D6A27E8005C0202 /* NewRequestView.swift */; };
 		FCF9258D2D6A21ED007B63EB /* AuthView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCF9258C2D6A21E9007B63EB /* AuthView.swift */; };
 /* End PBXBuildFile section */
 
@@ -55,6 +58,9 @@
 		F3C97F1A2D6A1EED00B26366 /* MealBuddyUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealBuddyUITestsLaunchTests.swift; sourceTree = "<group>"; };
 		FC58DE882D6A23C2005C0202 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		FC58DE972D6A25F5005C0202 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		FC58DE992D6A2742005C0202 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
+		FC58DE9B2D6A27D7005C0202 /* ConnectView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectView.swift; sourceTree = "<group>"; };
+		FC58DE9D2D6A27E8005C0202 /* NewRequestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewRequestView.swift; sourceTree = "<group>"; };
 		FCF9258C2D6A21E9007B63EB /* AuthView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -113,6 +119,9 @@
 		F3C97EFC2D6A1EE900B26366 /* MealBuddy */ = {
 			isa = PBXGroup;
 			children = (
+				FC58DE9D2D6A27E8005C0202 /* NewRequestView.swift */,
+				FC58DE9B2D6A27D7005C0202 /* ConnectView.swift */,
+				FC58DE992D6A2742005C0202 /* ProfileView.swift */,
 				FC58DE972D6A25F5005C0202 /* HomeView.swift */,
 				FCF9258C2D6A21E9007B63EB /* AuthView.swift */,
 				F3C97EFD2D6A1EE900B26366 /* MealBuddyApp.swift */,
@@ -284,8 +293,11 @@
 			files = (
 				F3C97F002D6A1EE900B26366 /* ContentView.swift in Sources */,
 				FC58DE982D6A25FB005C0202 /* HomeView.swift in Sources */,
+				FC58DE9A2D6A2742005C0202 /* ProfileView.swift in Sources */,
+				FC58DE9C2D6A27D7005C0202 /* ConnectView.swift in Sources */,
 				F3C97EFE2D6A1EE900B26366 /* MealBuddyApp.swift in Sources */,
 				FCF9258D2D6A21ED007B63EB /* AuthView.swift in Sources */,
+				FC58DE9E2D6A27E8005C0202 /* NewRequestView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -451,6 +463,7 @@
 				DEVELOPMENT_ASSET_PATHS = "\"MealBuddy/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We need your location to match you with nearby meal buddies.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -479,6 +492,7 @@
 				DEVELOPMENT_ASSET_PATHS = "\"MealBuddy/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We need your location to match you with nearby meal buddies.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
