@@ -244,6 +244,10 @@ struct HomeView: View {
 
 
 }
+struct Invite: Codable {
+    var email: String
+    var message: String
+}
 
 struct ConnectionRequest: Identifiable, Codable {
     @DocumentID var id: String?
@@ -255,11 +259,15 @@ struct ConnectionRequest: Identifiable, Codable {
     var date: String
     var location: GeoPoint
     var username: String
+    var invitesSent: [Invite]
+
 }
 
 struct RequestCard: View {
     let request: ConnectionRequest
     let userLocation: CLLocation?
+    @State private var showConnectView = false
+
     
     var distanceText: String {
         guard let userLocation = userLocation else { return "Distance unknown" }
@@ -327,17 +335,20 @@ struct RequestCard: View {
             .padding()
             .background(RoundedRectangle(cornerRadius: 15).fill(Color(UIColor.systemBrown).opacity(0.2)))
             
-            NavigationLink(destination: ConnectView()) {
-                Text("CONNECT")
-                    .font(.system(size: 15, weight: .medium))
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color(hex: "#66574A"))
-                    .foregroundColor(Color(hex: "#F6F3EC"))
-                    .cornerRadius(30)
-            }
-            .padding(.horizontal, 40)
-            .padding(.vertical, 30)
+            Button(action: { showConnectView = true }) {
+                            Text("CONNECT")
+                                .font(.system(size: 15, weight: .medium))
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(Color(hex: "#66574A"))
+                                .foregroundColor(Color(hex: "#F6F3EC"))
+                                .cornerRadius(30)
+                        }
+                        .padding(.horizontal, 40)
+                        .padding(.vertical, 30)
+                        .sheet(isPresented: $showConnectView) {
+                            ConnectView(request: request) 
+                        }
         }
     }
 }
