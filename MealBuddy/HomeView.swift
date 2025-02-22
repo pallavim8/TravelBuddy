@@ -2,6 +2,38 @@ import SwiftUI
 import FirebaseAuth
 import FirebaseFirestore
 import CoreLocation
+struct MainTabView: View {
+    var body: some View {
+        NavigationView {
+            TabView {
+                HomeView()
+                    .tabItem {
+                        Image(systemName: "house.fill")
+                        Text("Home")
+                    }
+                
+                MyRequestsView()
+                    .tabItem {
+                        Image(systemName: "envelope.fill")
+                        Text("Your Requests")
+                    }
+
+                Text("Chat View") // Placeholder for Chat View
+                    .tabItem {
+                        Image(systemName: "message.fill")
+                        Text("Chat")
+                    }
+
+                ProfileView() // Assuming ProfileView is your profile screen
+                    .tabItem {
+                        Image(systemName: "person.fill")
+                        Text("Profile")
+                    }
+            }
+            .accentColor(Color(hex: "#CD7741"))
+        }
+    }
+}
 
 struct HomeView: View {
     @State private var userEmail: String = ""
@@ -19,7 +51,6 @@ struct HomeView: View {
     let db = Firestore.firestore()
     
     var body: some View {
-        TabView{
             NavigationView {
                 VStack(alignment: .leading) {
                     HStack(spacing: 0) {
@@ -166,28 +197,6 @@ struct HomeView: View {
                 }
             }
             .navigationBarBackButtonHidden(true)
-            .tabItem{
-                Image(systemName: "house.fill")
-                                Text("Home")
-            }
-            Text("Notifications View") // Placeholder for Notifications View
-                            .tabItem {
-                                Image(systemName: "bell.fill")
-                                Text("Notifications")
-                            }
-
-                        Text("Chat View") // Placeholder for Chat View
-                            .tabItem {
-                                Image(systemName: "message.fill")
-                                Text("Chat")
-                            }
-
-                        ProfileView() // Assuming ProfileView is your profile screen
-                            .tabItem {
-                                Image(systemName: "person.fill")
-                                Text("Profile")
-                            }
-        }.accentColor(Color(hex: "#CD7741"))
     }
     
     
@@ -382,5 +391,5 @@ struct RequestCard: View {
 
 
 #Preview {
-    HomeView()
+    MainTabView()
 }
