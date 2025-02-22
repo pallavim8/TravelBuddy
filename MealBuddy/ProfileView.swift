@@ -140,6 +140,7 @@ struct ProfileView: View {
                 }
             }
             .padding()
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color(hex: "#EEE3D2"))
             .onAppear {
                 fetchUserData()

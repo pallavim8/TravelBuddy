@@ -3,36 +3,50 @@ import FirebaseAuth
 import FirebaseFirestore
 import CoreLocation
 struct MainTabView: View {
-    var body: some View {
-        NavigationView {
-            TabView {
-                HomeView()
-                    .tabItem {
-                        Image(systemName: "house.fill")
-                        Text("Home")
-                    }
-                
-                MyRequestsView()
-                    .tabItem {
-                        Image(systemName: "envelope.fill")
-                        Text("Your Requests")
-                    }
+    @State private var selectedTab: Int
 
-                Text("Chat View")
-                    .tabItem {
-                        Image(systemName: "message.fill")
-                        Text("Chat")
-                    }
-
-                ProfileView()
-                    .tabItem {
-                        Image(systemName: "person.fill")
-                        Text("Profile")
-                    }
-            }
-            .accentColor(Color(hex: "#CD7741"))
-        }
+    init(startingTab: Int = 0) {
+        _selectedTab = State(initialValue: startingTab)
     }
+
+    var body: some View {
+        TabView(selection: $selectedTab) {
+            HomeView()
+                .tabItem {
+                    Image(systemName: "house.fill")
+                    Text("Home")
+                }
+                .tag(0)
+
+            MyRequestsView()
+                .tabItem {
+                    Image(systemName: "envelope.fill")
+                    Text("Your Requests")
+                }
+                .tag(1)
+
+            Text("Chat View")
+                .tabItem {
+                    Image(systemName: "message.fill")
+                    Text("Chat")
+                }
+                .tag(2)
+
+            ProfileView()
+                .tabItem {
+                    Image(systemName: "person.fill")
+                    Text("Profile")
+                }
+                .tag(3) // Profile tab
+        }
+        .accentColor(Color(hex: "#CD7741"))
+        .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    EmptyView() // Ensures the back button is completely removed
+                }
+            }
+    }
+        
 }
 
 struct HomeView: View {
@@ -51,7 +65,7 @@ struct HomeView: View {
     let db = Firestore.firestore()
     
     var body: some View {
-            NavigationView {
+            NavigationStack {
                 VStack(alignment: .leading) {
                     HStack(spacing: 0) {
                         Image("forkKnife")
@@ -64,7 +78,7 @@ struct HomeView: View {
                             .foregroundColor(.black)
                         Spacer()
                         
-                        NavigationLink(destination: ProfileView()) {
+                        NavigationLink(destination: MainTabView(startingTab: 3)) {
                             Image(systemName: "person.circle.fill")
                                 .resizable()
                                 .scaledToFit()
@@ -135,10 +149,49 @@ struct HomeView: View {
                         ProgressView("Loading requests...")
                             .padding()
                     } else if connectionRequests.isEmpty {
-                        Text("No requests found? Create a new request or update your location preferences!")
-                            .font(.subheadline)
-                            .foregroundColor(.gray)
-                            .padding(.vertical, 100)
+                        VStack{
+
+                                                    Text("No requests found? ")
+
+                                                        .font(.subheadline)
+
+                                                        .foregroundColor(.gray)
+
+                                                        .lineLimit(nil)
+
+                                                        .multilineTextAlignment(.center)
+
+                                                        .fixedSize(horizontal: false, vertical: true)
+
+                                                        .frame(maxWidth: .infinity, alignment: .center)
+
+
+
+
+
+                                                    Text("Create a new request or update your location preferences!")
+
+                                                        .font(.subheadline)
+
+                                                        .foregroundColor(.gray)
+
+                                                        .lineLimit(nil)
+
+                                                        .multilineTextAlignment(.center)
+
+                                                        .fixedSize(horizontal: false, vertical: true)
+
+                                                        .frame(maxWidth: .infinity, alignment: .center)
+
+
+
+                                                }
+
+                                                .padding()
+
+                                                
+
+                                                Spacer(minLength: 250)
                     } else {
                         HStack {
                             Button(action: {
@@ -203,6 +256,11 @@ struct HomeView: View {
                 }
             }
             .navigationBarBackButtonHidden(true)
+            .toolbar {
+                    ToolbarItem(placement: .navigationBarLeading) {
+                        EmptyView() // Ensures the back button is completely removed
+                    }
+                }
     }
     
     

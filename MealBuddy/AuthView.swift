@@ -167,11 +167,10 @@ struct AuthView: View {
                                         }
                                        )
                 }
-                NavigationLink(destination: HomeView(), isActive: $navigateToHome) {
+                NavigationLink(destination: MainTabView(startingTab: 0), isActive: $navigateToHome) {
                     EmptyView()
                 }
-
-                NavigationLink(destination: ProfileView(), isActive: $navigateToProfile) {
+                NavigationLink(destination: MainTabView(startingTab: 3), isActive: $navigateToProfile) {
                     EmptyView()
                 }
                 Button(action: {

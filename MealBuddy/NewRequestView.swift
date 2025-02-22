@@ -159,6 +159,7 @@ struct NewRequestView: View {
                     self.userLocation = location
                 }
             }
+            .navigationBarBackButtonHidden(true)
         }
     }
 
