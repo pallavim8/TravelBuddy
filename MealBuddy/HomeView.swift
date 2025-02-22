@@ -18,13 +18,13 @@ struct MainTabView: View {
                         Text("Your Requests")
                     }
 
-                Text("Chat View") // Placeholder for Chat View
+                Text("Chat View")
                     .tabItem {
                         Image(systemName: "message.fill")
                         Text("Chat")
                     }
 
-                ProfileView() // Assuming ProfileView is your profile screen
+                ProfileView()
                     .tabItem {
                         Image(systemName: "person.fill")
                         Text("Profile")
@@ -94,19 +94,25 @@ struct HomeView: View {
                             .accentColor(Color(hex: "#8B7355"))
                         
                         Menu {
-                            ForEach(meals, id: \.self) { meal in
-                                Button(meal) { selectedMeal = meal }
-                            }
-                        } label: {
-                            HStack {
-                                Text(selectedMeal)
-                                Image(systemName: "chevron.down")
-                            }
-                            .padding(12)
-                            .background(RoundedRectangle(cornerRadius: 12).fill(Color(hex: "#655745").opacity(1)))
-                            .foregroundColor(Color(hex: "#F6F3EC"))
-                            .padding(.horizontal, 15)
-                        }
+                                                ForEach(meals, id: \.self) { meal in
+                                                    Button(meal) {
+                                                        selectedMeal = meal
+                                                    }
+                                                }
+                                            } label: {
+                                                HStack {
+                                                    Text(selectedMeal)
+                                                        .lineLimit(1)
+                                                        .frame(minWidth: 80)
+                                                    Image(systemName: "chevron.down")
+                                                }
+                                                .frame(maxWidth: 120)
+                                                .padding(12)
+                                                .background(RoundedRectangle(cornerRadius: 12).fill(Color(hex: "#655745")))
+                                                .foregroundColor(Color(hex: "#F6F3EC"))
+                                            }
+                                            .padding(.horizontal, 5)
+
                         
                         Button(action: fetchConnectionRequests) {
                             Image(systemName: "magnifyingglass")
@@ -132,7 +138,7 @@ struct HomeView: View {
                         Text("No requests found? Create a new request or update your location preferences!")
                             .font(.subheadline)
                             .foregroundColor(.gray)
-                            .padding()
+                            .padding(.vertical, 100)
                     } else {
                         HStack {
                             Button(action: {
