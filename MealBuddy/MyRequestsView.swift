@@ -19,7 +19,7 @@ struct MyRequestsView: View {
     let db = Firestore.firestore()
 
     var body: some View {
-        NavigationView { // Wrap the whole view in a NavigationView
+        NavigationView {
             VStack {
                 Text("My Requests")
                     .font(.largeTitle)
@@ -31,17 +31,17 @@ struct MyRequestsView: View {
                     ProgressView("Loading your requests...")
                         .padding()
                 } else if userRequests.isEmpty {
-                    Text("You have no requests yet!")
+                    Text("You have no requests yet!\n Make a new request to start matching with people in your area")
                         .font(.subheadline)
-                        .foregroundColor(.gray)
+                        .foregroundColor(Color(hex: "#726e69"))
                         .padding()
+                        .multilineTextAlignment(.center)
                 } else {
                     ScrollView {
                         ForEach(userRequests) { request in
                             VStack(alignment: .leading, spacing: 15) {
                                 RequestCardView(request: request)
                                 
-                                // Displaying Invites below the request
                                 InvitesView(
                                     invites: request.invitesSent,
                                     requestID: request.id,
@@ -61,13 +61,15 @@ struct MyRequestsView: View {
                 fetchUserRequests()
             }
             .padding()
-            .background(Color(hex: "#F4F1E1"))
+            .background(Color(hex: "#eee2d2"))
             .cornerRadius(20)
             .sheet(isPresented: $showInviteDetails) {
                 if let invite = selectedInvite {
                     InviteDetailsView(invite: invite)
                 }
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Color(hex: "#EEE2D2"))
         }
     }
 
@@ -182,7 +184,7 @@ struct InvitesView: View {
                         // NavigationLink is now wrapped around the Invite
                         NavigationLink(destination: InviteDetailsView(invite: invite)) {
                             Image(systemName: "envelope.fill")
-                                .foregroundColor(.blue)
+                                .foregroundColor(Color(hex: "#685643"))
                             
                             Text("\(invite.email) - \(invite.message)")
                                 .font(.subheadline)
@@ -196,15 +198,17 @@ struct InvitesView: View {
                         Button(action: {
                             onInviteTap(invite)
                         }) {
-                            Text("Match")
+                            Text(">")
                                 .font(.subheadline)
                                 .foregroundColor(.white)
                                 .padding(8)
-                                .background(Color.green)
+                                .background(Color(hex: "#685643"))
                                 .cornerRadius(10)
                         }
                     }
                     .padding(.vertical, 5)
+                    .padding(.horizontal, 5)
+                    .padding(.trailing, 15)
                     .background(RoundedRectangle(cornerRadius: 10).fill(Color(UIColor.systemGray6)))
                 }
             }
@@ -233,6 +237,12 @@ struct InviteDetailsView: View {
                 ProgressView("Loading user details...")
                     .padding()
             } else {
+                Image(systemName: "person.circle.fill")
+                                            .resizable()
+                                            .scaledToFit()
+                                            .frame(width: 50, height: 50)
+                                            .foregroundColor(Color(hex: "#655745"))
+                                            .padding(.bottom, 10)
                 if let userDetails = userDetails {
                     VStack(alignment: .leading, spacing: 20) {
                         Text("Invited by: \(invite.email)")
@@ -252,7 +262,7 @@ struct InviteDetailsView: View {
                             .font(.subheadline)
                     }
                     .padding()
-                    .background(RoundedRectangle(cornerRadius: 15).fill(Color(UIColor.systemGray6)))
+                    .background(RoundedRectangle(cornerRadius: 15).fill(Color.white).shadow(radius: 5))
                     .padding(.horizontal)
                 } else {
                     Text("No details available")
@@ -262,28 +272,26 @@ struct InviteDetailsView: View {
             }
 
             Button(action: {
-                // Handle further actions like matching here
-                // Maybe update the user's matches in Firestore
                 handleMatchRequest()
             }) {
                 Text("Match")
                     .font(.headline)
                     .foregroundColor(.white)
                     .padding()
-                    .background(Color.green)
+                    .background(Color(hex: "#685643"))
                     .cornerRadius(10)
             }
             .padding(.top, 20)
-
             Spacer()
         }
         .onAppear {
             fetchUserDetails(email: invite.email)
         }
         .padding()
-        .background(Color(hex: "#F4F1E1"))
-        
         .cornerRadius(20)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color(hex: "#EEE2D2"))
+
     }
     
     func fetchUserDetails(email: String) {

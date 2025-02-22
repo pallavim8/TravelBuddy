@@ -41,7 +41,7 @@ struct MainTabView: View {
             if selectedTab == 4 {
                 NewRequestView()
                                 .tabItem {
-                                    EmptyView() // This will make the tab 4 hidden
+                                    EmptyView()
                                 }
                                 .tag(4)
                         }
