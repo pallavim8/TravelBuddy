@@ -109,7 +109,8 @@ struct HomeView: View {
                                 .foregroundColor(.brown)
                         }
                         Spacer()
-                        RequestCard(request: connectionRequests[currentIndex])
+                        RequestCard(request: connectionRequests[currentIndex], userLocation: userLocation)
+
                         Spacer()
                         Button(action: {
                             if currentIndex < connectionRequests.count - 1 { currentIndex += 1 }
@@ -258,50 +259,51 @@ struct ConnectionRequest: Identifiable, Codable {
 
 struct RequestCard: View {
     let request: ConnectionRequest
+    let userLocation: CLLocation?
+    
+    var distanceText: String {
+        guard let userLocation = userLocation else { return "Distance unknown" }
+        let requestCoordinate = CLLocation(latitude: request.location.latitude, longitude: request.location.longitude)
+        let distance = userLocation.distance(from: requestCoordinate) / 1609.34 // Convert meters to miles
+        return String(format: "%.1f miles away", distance)
+    }
     
     var body: some View {
-        VStack{
+        VStack {
             VStack {
                 Image(systemName: "person.circle.fill")
                     .resizable()
                     .scaledToFit()
                     .frame(width: 100, height: 100)
                     .foregroundColor(Color(hex: "#655745"))
+                
                 Text(request.username)
                     .font(.title)
                     .foregroundColor(Color(hex: "#655745"))
-                HStack(spacing: 30){
-                    
+                
+                HStack(spacing: 30) {
                     Text("Looking for: " + request.cuisine)
                         .font(.title3)
                         .foregroundColor(Color(hex: "#655745"))
                         .padding(.horizontal, 10)
-                    if(request.diningOption == "Fast Food"){
+                    
+                    if request.diningOption == "Fast Food" {
                         ZStack {
-                            Image(systemName: "wind") // Wind effect behind the runner
+                            Image(systemName: "wind")
                                 .resizable()
                                 .scaledToFit()
                                 .frame(width: 40, height: 40)
-                                .offset(x: 35) // Moves the wind behind the person
-                                .foregroundColor(Color(hex: "#655745")) // Adjust color as needed
+                                .offset(x: 35)
+                                .foregroundColor(Color(hex: "#655745"))
                                 .scaleEffect(x: -1, y: 1)
-                            
                             
                             Image(systemName: "figure.run")
                                 .resizable()
                                 .scaledToFit()
                                 .frame(width: 40, height: 40)
-                                .foregroundColor(.clear) // No fill color
-                                .overlay(
-                                    Image(systemName: "figure.run")
-                                        .resizable()
-                                        .scaledToFit()
-                                        .frame(width: 40, height: 40)
-                                        .foregroundColor(Color(hex: "#655745"))
-                                )
+                                .foregroundColor(Color(hex: "#655745"))
                         }
-                    }
-                    else{
+                    } else {
                         Image(systemName: "chair")
                             .resizable()
                             .scaledToFit()
@@ -309,12 +311,14 @@ struct RequestCard: View {
                             .foregroundColor(Color(hex: "#655745"))
                     }
                 }
+                
                 Text(request.blurb.isEmpty ? "\"Looking for company!\"" : "\"" + request.blurb + "\"")
                     .italic()
                     .font(.headline)
                     .foregroundColor(Color(hex: "#655745"))
                     .padding(10)
-                Text("20 Miles Away")
+                
+                Text(distanceText)  // Updated distance text
                     .font(.headline)
                     .foregroundColor(Color(hex: "#655745"))
                     .padding(.top, 10)
@@ -322,6 +326,7 @@ struct RequestCard: View {
             .frame(width: 280)
             .padding()
             .background(RoundedRectangle(cornerRadius: 15).fill(Color(UIColor.systemBrown).opacity(0.2)))
+            
             NavigationLink(destination: ConnectView()) {
                 Text("CONNECT")
                     .font(.system(size: 15, weight: .medium))
@@ -331,12 +336,12 @@ struct RequestCard: View {
                     .foregroundColor(Color(hex: "#F6F3EC"))
                     .cornerRadius(30)
             }
-            
             .padding(.horizontal, 40)
             .padding(.vertical, 30)
         }
     }
 }
+
 
 #Preview {
     HomeView()
