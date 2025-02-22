@@ -110,7 +110,7 @@ struct ProfileView: View {
                         "email": email,
                         "dietary_restrictions": dietaryRestrictions,
                         "price_range": priceRangeText(),
-                        "preffered_radius": preferredRadius
+                        "preferred_radius": preferredRadius
                     ], merge: true) { error in
                         if let error = error {
                             print("Error updating user data: \(error.localizedDescription)")
