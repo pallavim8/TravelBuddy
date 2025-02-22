@@ -31,7 +31,7 @@ struct NewRequestView: View {
 
     var body: some View {
         NavigationView{
-            VStack(spacing: 20) {
+            VStack(spacing: 10) {
                 HStack(spacing: 0) {
                     Image("forkKnife")
                         .resizable()
@@ -114,6 +114,10 @@ struct NewRequestView: View {
                     .styledInputField()
                 
                 // Live Preview Section
+                Text("Preview of your request:")
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 10)
+                    .foregroundColor(Color(hex: "#655745"))
                 VStack {
                     Image(systemName: "person.circle.fill")
                         .resizable()
@@ -191,8 +195,10 @@ struct NewRequestView: View {
                 // Submission Feedback
                 if let success = submissionSuccess {
                     Text(success ? "Request submitted successfully!" : "Failed to submit request.")
-                        .foregroundColor(success ? .green : .red)
-                        .fontWeight(.bold)
+                        .foregroundColor(Color(hex: "#685643"))
+                        .font(.headline)
+                        .transition(.opacity)
+                        .padding()
                 }
             }
             .padding()

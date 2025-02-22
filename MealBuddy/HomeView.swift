@@ -68,7 +68,7 @@ struct HomeView: View {
     @State private var userLocation: CLLocation?
 
     
-    let meals = ["Breakfast", "Lunch", "Dinner"]
+    let meals = ["Breakfast", "Lunch", "Dinner", "Coffee"]
     let db = Firestore.firestore()
     
     var body: some View {
