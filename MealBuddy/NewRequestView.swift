@@ -75,6 +75,7 @@ struct NewRequestView: View {
                     .padding(.horizontal, 15)
 
                 // Meal Type Picker
+                
                 Picker("Select Meal", selection: $selectedMeal) {
                     ForEach(mealOptions, id: \.self) { meal in
                         Text(meal).tag(meal)

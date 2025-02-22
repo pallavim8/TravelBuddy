@@ -19,148 +19,175 @@ struct HomeView: View {
     let db = Firestore.firestore()
     
     var body: some View {
-        NavigationView {
-            VStack(alignment: .leading) {
-                HStack(spacing: 0) {
-                    Image("forkKnife")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 45, height: 45)
-                    
-                    Text("MEALBUDDY")
-                        .font(.largeTitle).bold()
-                        .foregroundColor(.black)
-                    Spacer()
-                    NavigationLink(destination: ProfileView()) {
-                        Image(systemName: "person.circle.fill")
+        TabView{
+            NavigationView {
+                VStack(alignment: .leading) {
+                    HStack(spacing: 0) {
+                        Image("forkKnife")
                             .resizable()
                             .scaledToFit()
-                            .frame(width: 40, height: 40)
-                            .foregroundColor(Color(hex: "#655745"))
+                            .frame(width: 45, height: 45)
+                        
+                        Text("MEALBUDDY")
+                            .font(.largeTitle).bold()
+                            .foregroundColor(.black)
+                        Spacer()
+                        
+                        NavigationLink(destination: ProfileView()) {
+                            Image(systemName: "person.circle.fill")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 40, height: 40)
+                                .foregroundColor(Color(hex: "#655745"))
+                        }
+                        
                     }
-                    
-                }
-                .padding(.horizontal, 15)
-                Text("Welcome, \(userName)!")
-                    .font(.title)
-                    .fontWeight(.bold)
-                    .foregroundColor(.black)
                     .padding(.horizontal, 15)
-                
-                HStack {
-                    
-                    DatePicker("", selection: $selectedDate, displayedComponents: .date)
-                        .labelsHidden()
-                        .padding(5)
-                        .colorScheme(.dark)
-                        .background(RoundedRectangle(cornerRadius: 12).fill(Color(hex: "#655745")))
-                        .foregroundColor(.white) 
+                    .padding(.top, 100)
+                    Text("Welcome, \(userName)!")
+                        .font(.title)
+                        .fontWeight(.bold)
+                        .foregroundColor(.black)
                         .padding(.horizontal, 15)
-                        .tint(Color(hex: "#8B7355"))
-                        .accentColor(Color(hex: "#8B7355"))
                     
-                    Menu {
-                        ForEach(meals, id: \.self) { meal in
-                            Button(meal) { selectedMeal = meal }
-                        }
-                    } label: {
-                        HStack {
-                            Text(selectedMeal)
-                            Image(systemName: "chevron.down")
-                        }
-                        .padding(12)
-                        .background(RoundedRectangle(cornerRadius: 12).fill(Color(hex: "#655745").opacity(1)))
-                        .foregroundColor(Color(hex: "#F6F3EC"))
-                        .padding(.horizontal, 15)
-                    }
-                    
-                    Button(action: fetchConnectionRequests) {
-                        Image(systemName: "magnifyingglass")
-                            .font(.title2)
-                            .padding()
-                            .background(Circle().fill(Color(UIColor.systemBrown).opacity(0.2)))
-                            .foregroundColor(.brown)
-                    }
-                }
-                .padding(.horizontal)
-                
-                // Nearby Requests
-                Text("Nearby Requests")
-                    .font(.headline)
-                    .foregroundColor(.black)
-                    .padding(.horizontal)
-                    .fontWeight(.heavy)
-                
-                if isLoading {
-                    ProgressView("Loading requests...")
-                        .padding()
-                } else if connectionRequests.isEmpty {
-                    Text("No requests found? Create a new request or update your location preferences!")
-                        .font(.subheadline)
-                        .foregroundColor(.gray)
-                        .padding()
-                } else {
                     HStack {
-                        Button(action: {
-                            if currentIndex > 0 { currentIndex -= 1 }
-                        }) {
-                            Image(systemName: "chevron.left")
-                                .font(.largeTitle)
-                                .foregroundColor(.brown)
+                        
+                        DatePicker("", selection: $selectedDate, displayedComponents: .date)
+                            .labelsHidden()
+                            .padding(5)
+                            .colorScheme(.dark)
+                            .background(RoundedRectangle(cornerRadius: 12).fill(Color(hex: "#655745")))
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 15)
+                            .tint(Color(hex: "#8B7355"))
+                            .accentColor(Color(hex: "#8B7355"))
+                        
+                        Menu {
+                            ForEach(meals, id: \.self) { meal in
+                                Button(meal) { selectedMeal = meal }
+                            }
+                        } label: {
+                            HStack {
+                                Text(selectedMeal)
+                                Image(systemName: "chevron.down")
+                            }
+                            .padding(12)
+                            .background(RoundedRectangle(cornerRadius: 12).fill(Color(hex: "#655745").opacity(1)))
+                            .foregroundColor(Color(hex: "#F6F3EC"))
+                            .padding(.horizontal, 15)
                         }
-                        Spacer()
-                        RequestCard(request: connectionRequests[currentIndex], userLocation: userLocation)
-
-                        Spacer()
-                        Button(action: {
-                            if currentIndex < connectionRequests.count - 1 { currentIndex += 1 }
-                        }) {
-                            Image(systemName: "chevron.right")
-                                .font(.largeTitle)
+                        
+                        Button(action: fetchConnectionRequests) {
+                            Image(systemName: "magnifyingglass")
+                                .font(.title2)
+                                .padding()
+                                .background(Circle().fill(Color(UIColor.systemBrown).opacity(0.2)))
                                 .foregroundColor(.brown)
                         }
                     }
-                    .padding()
-                }
-                
-                VStack(alignment: .leading) {
-                    Text("Create A New Request")
+                    .padding(.horizontal)
+                    
+                    // Nearby Requests
+                    Text("Nearby Requests")
                         .font(.headline)
                         .foregroundColor(.black)
                         .padding(.horizontal)
+                        .fontWeight(.heavy)
                     
-                    HStack {
-                        Text("Don’t feel like eating alone? Make a new request to match with people in your area")
+                    if isLoading {
+                        ProgressView("Loading requests...")
+                            .padding()
+                    } else if connectionRequests.isEmpty {
+                        Text("No requests found? Create a new request or update your location preferences!")
                             .font(.subheadline)
                             .foregroundColor(.gray)
-                            .padding(.leading)
-                        Spacer()
-                        
-                        
-                        NavigationLink(destination: NewRequestView()) {
-                            Image(systemName: "plus.circle.fill")
-                                .font(.largeTitle)
-                                .foregroundColor(.brown)
-                                .background(Circle().fill(Color(UIColor.systemBrown).opacity(0.2)))
+                            .padding()
+                    } else {
+                        HStack {
+                            Button(action: {
+                                if currentIndex > 0 { currentIndex -= 1 }
+                            }) {
+                                Image(systemName: "chevron.left")
+                                    .font(.largeTitle)
+                                    .foregroundColor(.brown).offset(y: -45)
+                            }
+                            Spacer()
+                            RequestCard(request: connectionRequests[currentIndex], userLocation: userLocation)
+                            
+//                            Spacer()
+                            Button(action: {
+                                if currentIndex < connectionRequests.count - 1 { currentIndex += 1 }
+                            }) {
+                                Image(systemName: "chevron.right")
+                                    .font(.largeTitle)
+                                    .foregroundColor(.brown).offset(y:-45)
+                            }
                         }
-                        .padding(.trailing)
-
+                        .padding()
                     }
+                    
+                    VStack(alignment: .leading) {
+                        Text("Create A New Request")
+                            .font(.headline)
+                            .foregroundColor(.black)
+                            .padding(.horizontal)
+                        
+                        HStack {
+                            Text("Don’t feel like eating alone? Make a new request to match with people in your area")
+                                .font(.subheadline)
+                                .foregroundColor(.gray)
+                                .padding(.leading)
+                            
+                            Spacer()
+                            
+                            NavigationLink(destination: NewRequestView()) {
+                                Image(systemName: "plus.circle.fill")
+                                    .font(.largeTitle)
+                                    .foregroundColor(.brown)
+                                    .background(Circle().fill(Color(UIColor.systemBrown).opacity(0.2)))
+                            }
+                        }
+                        
+                    }
+                    .padding()
+                    .background(RoundedRectangle(cornerRadius: 30).fill(Color(UIColor.systemBrown).opacity(0.2))) // Rounded rectangle around the whole section
+                    .padding(.bottom, 120) // Adjust bottom padding for better spacing between buttons
+
+                    
+                   Spacer()
                 }
                 .padding()
-                
-                Spacer()
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(Color(hex: "#EEE2D2"))
+                .onAppear {
+                    fetchUser()
+                    fetchUserLocation()
+                    fetchConnectionRequests()
+                }
             }
-            .padding()
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Color(hex: "#EEE2D2"))
-            .onAppear {
-                fetchUser()
-                fetchUserLocation()
-                fetchConnectionRequests()
+            .navigationBarBackButtonHidden(true)
+            .tabItem{
+                Image(systemName: "house.fill")
+                                Text("Home")
             }
-        }
-        .navigationBarBackButtonHidden(true)
+            Text("Notifications View") // Placeholder for Notifications View
+                            .tabItem {
+                                Image(systemName: "bell.fill")
+                                Text("Notifications")
+                            }
+
+                        Text("Chat View") // Placeholder for Chat View
+                            .tabItem {
+                                Image(systemName: "message.fill")
+                                Text("Chat")
+                            }
+
+                        ProfileView() // Assuming ProfileView is your profile screen
+                            .tabItem {
+                                Image(systemName: "person.fill")
+                                Text("Profile")
+                            }
+        }.accentColor(Color(hex: "#CD7741"))
     }
     
     
@@ -291,7 +318,7 @@ struct RequestCard: View {
                 
                 HStack(spacing: 30) {
                     Text("Looking for: " + request.cuisine)
-                        .font(.title3)
+                        .font(.headline)
                         .foregroundColor(Color(hex: "#655745"))
                         .padding(.horizontal, 10)
                     
@@ -300,15 +327,15 @@ struct RequestCard: View {
                             Image(systemName: "wind")
                                 .resizable()
                                 .scaledToFit()
-                                .frame(width: 40, height: 40)
-                                .offset(x: 35)
+                                .frame(width: 30, height: 30)
+                                .offset(x: 30)
                                 .foregroundColor(Color(hex: "#655745"))
                                 .scaleEffect(x: -1, y: 1)
                             
                             Image(systemName: "figure.run")
                                 .resizable()
                                 .scaledToFit()
-                                .frame(width: 40, height: 40)
+                                .frame(width: 30, height: 30)
                                 .foregroundColor(Color(hex: "#655745"))
                         }
                     } else {
@@ -324,31 +351,31 @@ struct RequestCard: View {
                     .italic()
                     .font(.headline)
                     .foregroundColor(Color(hex: "#655745"))
-                    .padding(10)
+                    .padding(5)
                 
                 Text(distanceText)  // Updated distance text
                     .font(.headline)
                     .foregroundColor(Color(hex: "#655745"))
-                    .padding(.top, 10)
+                    
             }
             .frame(width: 280)
             .padding()
             .background(RoundedRectangle(cornerRadius: 15).fill(Color(UIColor.systemBrown).opacity(0.2)))
             
             Button(action: { showConnectView = true }) {
-                            Text("CONNECT")
-                                .font(.system(size: 15, weight: .medium))
-                                .frame(maxWidth: .infinity)
-                                .padding()
-                                .background(Color(hex: "#66574A"))
-                                .foregroundColor(Color(hex: "#F6F3EC"))
-                                .cornerRadius(30)
-                        }
-                        .padding(.horizontal, 40)
-                        .padding(.vertical, 30)
-                        .sheet(isPresented: $showConnectView) {
-                            ConnectView(request: request) 
-                        }
+                Text("CONNECT")
+                    .font(.system(size: 15, weight: .medium))
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color(hex: "#66574A"))
+                    .foregroundColor(Color(hex: "#F6F3EC"))
+                    .cornerRadius(30)
+            }
+            .padding(.horizontal, 40)
+            .padding(.top, 20)
+            .sheet(isPresented: $showConnectView) {
+                ConnectView(request: request)
+            }
         }
     }
 }
