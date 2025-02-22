@@ -41,16 +41,39 @@ struct NewRequestView: View {
                     Text("MEALBUDDY")
                         .font(.largeTitle).bold()
                         .foregroundColor(.black)
+                    Spacer()
+                    NavigationLink(destination: ProfileView()) {
+                        Image(systemName: "person.circle.fill")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 40, height: 40)
+                            .foregroundColor(Color(hex: "#655745"))
+                    }
+                    
                 }
                 Text("Create a New Request")
                     .font(.largeTitle)
                     .fontWeight(.bold)
                 
-                // Date Picker
-                DatePicker("Select Date", selection: $selectedDate, displayedComponents: .date)
-                    .datePickerStyle(.compact)
-                    .styledInputField()
-                
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 14)
+                            .stroke(Color(hex: "#655745"), lineWidth: 2)
+                            .frame(height: 45)
+                        HStack{
+                            Text("Select Date: ").padding(.horizontal, 10)
+                            Spacer()
+                            DatePicker("", selection: $selectedDate, displayedComponents: .date)
+                                .labelsHidden()
+                                .colorScheme(.dark)
+                                .background(RoundedRectangle(cornerRadius: 12).fill(Color(hex: "#655745"))) // Existing background
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 15)
+                                .tint(Color(hex: "#8B7355"))
+                                .accentColor(Color(hex: "#8B7355"))
+                        }
+                    }
+                    .padding(.horizontal, 15)
+
                 // Meal Type Picker
                 Picker("Select Meal", selection: $selectedMeal) {
                     ForEach(mealOptions, id: \.self) { meal in
