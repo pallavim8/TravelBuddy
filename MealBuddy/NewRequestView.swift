@@ -85,7 +85,7 @@ struct NewRequestView: View {
                 .padding(.horizontal)
                 
                 // Cuisine Type Dropdown
-                VStack(alignment: .leading) {
+                HStack {
                     Text("Cuisine Type")
                         .font(.headline)
                         .padding(.leading, 10)
@@ -96,6 +96,7 @@ struct NewRequestView: View {
                     }
                     .pickerStyle(MenuPickerStyle()) // Dropdown menu
                     .styledInputField()
+                    .accentColor(Color(hex: "#655745"))
                 }
                 
                 // Fast Food or Sit-In Picker
@@ -106,27 +107,70 @@ struct NewRequestView: View {
                 }
                 .pickerStyle(SegmentedPickerStyle())
                 .padding(.horizontal)
+                .accentColor(Color(hex: "#655745"))
                 
                 // Short Blurb at the bottom
                 TextField("Add a short blurb (e.g., 'Craving sushi in town!')", text: $shortBlurb)
                     .styledInputField()
                 
                 // Live Preview Section
-                VStack(alignment: .leading, spacing: 10) {
-                    Text("🔍 Request Preview")
-                        .font(.title2)
-                        .fontWeight(.semibold)
+                VStack {
+                    Image(systemName: "person.circle.fill")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 50, height: 50)
+                        .foregroundColor(Color(hex: "#655745"))
                     
-                    Text("**Date:** \(formattedDate(selectedDate))")
-                    Text("**Meal:** \(selectedMeal)")
-                    Text("**Cuisine:** \(selectedCuisine)")
-                    Text("**Dining Preference:** \(diningOption)")
-                    Text("**Blurb:** \(shortBlurb.isEmpty ? "No blurb added" : shortBlurb)")
+                    Text(username!)
+                        .font(.title)
+                        .foregroundColor(Color(hex: "#655745"))
+                    
+                    HStack(spacing: 20) {
+                        Text("Looking for: " + selectedCuisine)
+                            .font(.headline)
+                            .foregroundColor(Color(hex: "#655745"))
+                            .padding(.horizontal, 10)
+                        
+                        if diningOption == "Fast Food" {
+                            ZStack {
+                                Image(systemName: "wind")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 30, height: 30)
+                                    .offset(x: 30)
+                                    .foregroundColor(Color(hex: "#655745"))
+                                    .scaleEffect(x: -1, y: 1)
+                                
+                                Image(systemName: "figure.run")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 30, height: 30)
+                                    .foregroundColor(Color(hex: "#655745"))
+                            }
+                            .padding(.horizontal, 5)
+                        } else {
+                            Image(systemName: "chair")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 30, height: 30)
+                                .foregroundColor(Color(hex: "#655745"))
+                        }
+                    }
+                    
+                    Text(shortBlurb.isEmpty ? "\"Looking for company!\"" : "\"" + shortBlurb + "\"")
+                        .italic()
+                        .font(.headline)
+                        .foregroundColor(Color(hex: "#655745"))
+                        .padding(5)
+                    
+                    Text("x miles away")
+                        .font(.headline)
+                        .foregroundColor(Color(hex: "#655745"))
+                        
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .frame(width: 280)
                 .padding()
-                .background(RoundedRectangle(cornerRadius: 15).fill(Color(.systemGray6)))
-                .padding(.horizontal)
+                .background(RoundedRectangle(cornerRadius: 15).fill(Color(UIColor.systemBrown).opacity(0.2)))
                 
                 // Submit Button
                 Button(action: submitRequest) {
