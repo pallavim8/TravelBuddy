@@ -11,6 +11,9 @@ struct AuthView: View {
     @State private var showAlert = false
     @State private var alertMessage = ""
     
+    @State private var navigateToHome = false
+    @State private var navigateToProfile = false
+    
     var body: some View {
         NavigationView {
             VStack {
@@ -164,11 +167,13 @@ struct AuthView: View {
                                         }
                                        )
                 }
-                
-                NavigationLink(destination: HomeView(), isActive: $isLoggedIn) {
+                NavigationLink(destination: HomeView(), isActive: $navigateToHome) {
                     EmptyView()
                 }
-                
+
+                NavigationLink(destination: ProfileView(), isActive: $navigateToProfile) {
+                    EmptyView()
+                }
                 Button(action: {
                     isSignUp.toggle()
                 }) {
@@ -195,7 +200,7 @@ struct AuthView: View {
                 showAlert = true
                 return
             }
-            isLoggedIn = true
+            navigateToHome = true
         }
     }
     
@@ -215,7 +220,7 @@ struct AuthView: View {
                     alertMessage = "Failed to update profile: \(error.localizedDescription)"
                     showAlert = true
                 } else {
-                    isLoggedIn = true
+                    navigateToProfile = true
                 }
             }
         }

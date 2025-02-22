@@ -15,6 +15,8 @@ struct ProfileView: View {
     @State private var initialUsername: String = ""
     @State private var initialDietaryRestrictions: [String] = []
     @State private var initialPriceRange: Double = 1
+    @State private var navigateToHome = false
+
     
     let db = Firestore.firestore()
     @State private var userID = Auth.auth().currentUser?.uid ?? "unknown"
@@ -25,106 +27,124 @@ struct ProfileView: View {
 
     
     var body: some View {
-        VStack {
-            // Username TextField for editing
-            Text("Edit Profile").font(.title).padding()
-            Text("Username").font(.headline)
-            TextField("Enter your username", text: $username)
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-                .padding()
-                .onChange(of: username) { _ in
-                    checkForChanges()
+        
+        NavigationView{
+            
+            VStack {
+                NavigationLink(destination: HomeView(), isActive: $navigateToHome) {
+                    EmptyView()
                 }
-            
-            Text("Select your Dietary Restrictions")
-                .font(.headline)
-                .padding(.top)
-            
-            ForEach(dietaryOptions, id: \.self) { option in
-                Toggle(option, isOn: Binding(
-                    get: { selectedDietaryRestrictions.contains(option) },
-                    set: { isSelected in
-                        if isSelected {
-                            
-                            if !selectedDietaryRestrictions.contains(option) {
-                                selectedDietaryRestrictions.append(option)
-                            }
-                        } else {
-                            selectedDietaryRestrictions.removeAll { $0 == option }
-                        }
+                // Username TextField for editing
+                Text("Edit Profile").font(.title).padding()
+                Text("Username").font(.headline)
+                TextField("Enter your username", text: $username)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .padding()
+                    .onChange(of: username) { _ in
                         checkForChanges()
                     }
-                ))
-                .padding(.vertical, 4)
-            }
-            
-            VStack(alignment: .leading, spacing: 10) {
-                           Text("Preferred Radius (miles)")
-                               .font(.headline)
-                           Picker("Preferred Radius", selection: $preferredRadius) {
-                               ForEach(radiusOptions, id: \.self) { radius in
-                                   Text("\(radius) miles").tag(radius)
-                               }
-                           }
-                           .pickerStyle(MenuPickerStyle())
-                           .padding()
-                           .onChange(of: preferredRadius) { _ in checkForChanges() }
-                       }
-                       .padding(.horizontal)
-            
-            Text("Price Range (\(priceRangeText()))")
-                .font(.headline)
-                .padding(.top)
-            
-            Slider(value: $priceRange, in: 1...3, step: 1)
-                .padding(.horizontal)
-                .onChange(of: priceRange) { _ in
-                    checkForChanges()
+                
+                Text("Select your Dietary Restrictions")
+                    .font(.headline)
+                    .padding(.top)
+                
+                ForEach(dietaryOptions, id: \.self) { option in
+                    Toggle(option, isOn: Binding(
+                        get: { selectedDietaryRestrictions.contains(option) },
+                        set: { isSelected in
+                            if isSelected {
+                                
+                                if !selectedDietaryRestrictions.contains(option) {
+                                    selectedDietaryRestrictions.append(option)
+                                }
+                            } else {
+                                selectedDietaryRestrictions.removeAll { $0 == option }
+                            }
+                            checkForChanges()
+                        }
+                    ))
+                    .padding(.vertical, 4)
                 }
-            
-            Button("Save Preferences") {
                 
-                let dietaryRestrictions = selectedDietaryRestrictions.joined(separator: ", ")
-                
-                
-                db.collection("users").document(userID).setData([
-                    "username": username,
-                    "email": email,
-                    "dietary_restrictions": dietaryRestrictions,
-                    "price_range": priceRangeText(),
-                    "preffered_radius": preferredRadius
-                ], merge: true) { error in
-                    if let error = error {
-                        print("Error updating user data: \(error.localizedDescription)")
-                    } else {
-                        print("User data successfully updated")
-                        isSaved = true
-                        isChanged = false
-                        
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                            isSaved = false
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("Preferred Radius (miles)")
+                        .font(.headline)
+                    Picker("Preferred Radius", selection: $preferredRadius) {
+                        ForEach(radiusOptions, id: \.self) { radius in
+                            Text("\(radius) miles").tag(radius)
                         }
                     }
+                    .pickerStyle(MenuPickerStyle())
+                    .padding()
+                    .onChange(of: preferredRadius) { _ in checkForChanges() }
+                }
+                .padding(.horizontal)
+                
+                Text("Price Range (\(priceRangeText()))")
+                    .font(.headline)
+                    .padding(.top)
+                
+                Slider(value: $priceRange, in: 1...3, step: 1)
+                    .padding(.horizontal)
+                    .onChange(of: priceRange) { _ in
+                        checkForChanges()
+                    }
+                
+                Button("Save Preferences") {
+                    
+                    let dietaryRestrictions = selectedDietaryRestrictions.joined(separator: ", ")
+                    
+                    
+                    db.collection("users").document(userID).setData([
+                        "username": username,
+                        "email": email,
+                        "dietary_restrictions": dietaryRestrictions,
+                        "price_range": priceRangeText(),
+                        "preffered_radius": preferredRadius
+                    ], merge: true) { error in
+                        if let error = error {
+                            print("Error updating user data: \(error.localizedDescription)")
+                        } else {
+                            print("User data successfully updated")
+                            isSaved = true
+                            isChanged = false
+                            
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                                isSaved = false
+                            }
+                        }
+                    }
+                }
+                .padding()
+                .background(isChanged ? Color.green : Color.gray)
+                .foregroundColor(.white)
+                .cornerRadius(8)
+                .disabled(!isChanged)
+                
+                if isSaved {
+                    Text("Preferences Saved!")
+                        .foregroundColor(.green)
+                        .font(.headline)
+                        .transition(.opacity)
+                        .padding()
                 }
             }
             .padding()
-            .background(isChanged ? Color.green : Color.gray)
-            .foregroundColor(.white)
-            .cornerRadius(8)
-            .disabled(!isChanged)
+            .onAppear {
+                fetchUserData()
+            }.navigationBarItems(leading: Button(action: {
+                navigateToHome = true
+            }) {
+                HStack {
+                    Image(systemName: "chevron.left") // Default back button icon
+                        .foregroundColor(.blue) // Matches default back button color
+                    Text("Home")
+                        .foregroundColor(.blue)
+                }
+            })
+        }
+        .navigationBarBackButtonHidden(true)
             
-            if isSaved {
-                Text("Preferences Saved!")
-                    .foregroundColor(.green)
-                    .font(.headline)
-                    .transition(.opacity)
-                    .padding()
-            }
-        }
-        .padding()
-        .onAppear {
-            fetchUserData()
-        }
     }
     
     func priceRangeText() -> String {
