@@ -14,6 +14,7 @@
 		F3C97F0F2D6A1EEC00B26366 /* MealBuddyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3C97F0E2D6A1EEC00B26366 /* MealBuddyTests.swift */; };
 		F3C97F192D6A1EED00B26366 /* MealBuddyUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3C97F182D6A1EED00B26366 /* MealBuddyUITests.swift */; };
 		F3C97F1B2D6A1EED00B26366 /* MealBuddyUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3C97F1A2D6A1EED00B26366 /* MealBuddyUITestsLaunchTests.swift */; };
+		FCF9258D2D6A21ED007B63EB /* AuthView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCF9258C2D6A21E9007B63EB /* AuthView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -44,6 +45,7 @@
 		F3C97F142D6A1EED00B26366 /* MealBuddyUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MealBuddyUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		F3C97F182D6A1EED00B26366 /* MealBuddyUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealBuddyUITests.swift; sourceTree = "<group>"; };
 		F3C97F1A2D6A1EED00B26366 /* MealBuddyUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealBuddyUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		FCF9258C2D6A21E9007B63EB /* AuthView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -94,6 +96,7 @@
 		F3C97EFC2D6A1EE900B26366 /* MealBuddy */ = {
 			isa = PBXGroup;
 			children = (
+				FCF9258C2D6A21E9007B63EB /* AuthView.swift */,
 				F3C97EFD2D6A1EE900B26366 /* MealBuddyApp.swift */,
 				F3C97EFF2D6A1EE900B26366 /* ContentView.swift */,
 				F3C97F012D6A1EEC00B26366 /* Assets.xcassets */,
@@ -259,6 +262,7 @@
 			files = (
 				F3C97F002D6A1EE900B26366 /* ContentView.swift in Sources */,
 				F3C97EFE2D6A1EE900B26366 /* MealBuddyApp.swift in Sources */,
+				FCF9258D2D6A21ED007B63EB /* AuthView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
