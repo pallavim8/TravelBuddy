@@ -185,7 +185,7 @@ struct HomeView: View {
                             }) {
                                 Image(systemName: "chevron.left")
                                     .font(.largeTitle)
-                                    .foregroundColor(.brown).offset(y: -45)
+                                    .foregroundColor(.brown)
                             }
                             Spacer()
                             RequestCard(request: connectionRequests[currentIndex], userLocation: userLocation)
@@ -196,7 +196,7 @@ struct HomeView: View {
                             }) {
                                 Image(systemName: "chevron.right")
                                     .font(.largeTitle)
-                                    .foregroundColor(.brown).offset(y:-45)
+                                    .foregroundColor(.brown)
                             }
                         }
                         .padding()
