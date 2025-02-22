@@ -138,6 +138,12 @@ struct ProfileView: View {
                         .transition(.opacity)
                         .padding()
                 }
+                Spacer()
+                Spacer()
+                Spacer()
+                Spacer()
+                Spacer()
+                Spacer()
             }
             .padding()
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -157,7 +163,6 @@ struct ProfileView: View {
 //            })
         }
         .navigationBarBackButtonHidden(true)
-            
     }
     
     func priceRangeText() -> String {
