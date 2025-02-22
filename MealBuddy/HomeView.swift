@@ -40,6 +40,7 @@ struct MainTabView: View {
                 .tag(3) // Profile tab
         }
         .accentColor(Color(hex: "#CD7741"))
+        .navigationBarBackButtonHidden(true)
         .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     EmptyView() // Ensures the back button is completely removed
@@ -150,48 +151,27 @@ struct HomeView: View {
                             .padding()
                     } else if connectionRequests.isEmpty {
                         VStack{
+                            Text("No requests found? ")
+                                .font(.subheadline)
+                                .foregroundColor(.gray)
+                                .lineLimit(nil)
+                                .multilineTextAlignment(.center)
+                                .fixedSize(horizontal: false, vertical: true)
+                                .frame(maxWidth: .infinity, alignment: .center)
+                            
+                            Text("Create a new request or update your location preferences!")
+                                .font(.subheadline)
+                                .foregroundColor(.gray)
+                                .lineLimit(nil)
+                                .multilineTextAlignment(.center)
+                                .fixedSize(horizontal: false, vertical: true)
+                                .frame(maxWidth: .infinity, alignment: .center)
+                        }
 
-                                                    Text("No requests found? ")
+                        .padding()
 
-                                                        .font(.subheadline)
-
-                                                        .foregroundColor(.gray)
-
-                                                        .lineLimit(nil)
-
-                                                        .multilineTextAlignment(.center)
-
-                                                        .fixedSize(horizontal: false, vertical: true)
-
-                                                        .frame(maxWidth: .infinity, alignment: .center)
-
-
-
-
-
-                                                    Text("Create a new request or update your location preferences!")
-
-                                                        .font(.subheadline)
-
-                                                        .foregroundColor(.gray)
-
-                                                        .lineLimit(nil)
-
-                                                        .multilineTextAlignment(.center)
-
-                                                        .fixedSize(horizontal: false, vertical: true)
-
-                                                        .frame(maxWidth: .infinity, alignment: .center)
-
-
-
-                                                }
-
-                                                .padding()
-
-                                                
-
-                                                Spacer(minLength: 250)
+                        Spacer(minLength: 250)
+                        
                     } else {
                         HStack {
                             Button(action: {
