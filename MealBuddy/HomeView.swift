@@ -37,14 +37,13 @@ struct MainTabView: View {
                     Image(systemName: "person.fill")
                     Text("Profile")
                 }
-                .tag(3) // Profile tab
-            if selectedTab == 4 {
-                NewRequestView()
-                                .tabItem {
-                                    EmptyView()
-                                }
-                                .tag(4)
-                        }
+                .tag(3)
+            NewRequestView()
+                .tabItem {
+                    Image(systemName: "plus.circle.fill")
+                    Text("New Request")
+                }
+                .tag(4)
         }
         .accentColor(Color(hex: "#CD7741"))
         .navigationBarBackButtonHidden(true)
