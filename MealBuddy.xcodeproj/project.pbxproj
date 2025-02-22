@@ -26,6 +26,7 @@
 		FC58DE9C2D6A27D7005C0202 /* ConnectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC58DE9B2D6A27D7005C0202 /* ConnectView.swift */; };
 		FC58DE9E2D6A27E8005C0202 /* NewRequestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC58DE9D2D6A27E8005C0202 /* NewRequestView.swift */; };
 		FC58DEA22D6A4CC0005C0202 /* MyRequestsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC58DEA12D6A4CC0005C0202 /* MyRequestsView.swift */; };
+		FC58DEA62D6A7C3B005C0202 /* SplashScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC58DEA52D6A7C3B005C0202 /* SplashScreen.swift */; };
 		FCF9258D2D6A21ED007B63EB /* AuthView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCF9258C2D6A21E9007B63EB /* AuthView.swift */; };
 /* End PBXBuildFile section */
 
@@ -63,6 +64,7 @@
 		FC58DE9B2D6A27D7005C0202 /* ConnectView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectView.swift; sourceTree = "<group>"; };
 		FC58DE9D2D6A27E8005C0202 /* NewRequestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewRequestView.swift; sourceTree = "<group>"; };
 		FC58DEA12D6A4CC0005C0202 /* MyRequestsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyRequestsView.swift; sourceTree = "<group>"; };
+		FC58DEA52D6A7C3B005C0202 /* SplashScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashScreen.swift; sourceTree = "<group>"; };
 		FCF9258C2D6A21E9007B63EB /* AuthView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -121,6 +123,7 @@
 		F3C97EFC2D6A1EE900B26366 /* MealBuddy */ = {
 			isa = PBXGroup;
 			children = (
+				FC58DEA52D6A7C3B005C0202 /* SplashScreen.swift */,
 				FC58DEA12D6A4CC0005C0202 /* MyRequestsView.swift */,
 				FC58DE9D2D6A27E8005C0202 /* NewRequestView.swift */,
 				FC58DE9B2D6A27D7005C0202 /* ConnectView.swift */,
@@ -294,6 +297,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FC58DEA62D6A7C3B005C0202 /* SplashScreen.swift in Sources */,
 				F3C97F002D6A1EE900B26366 /* ContentView.swift in Sources */,
 				FC58DE982D6A25FB005C0202 /* HomeView.swift in Sources */,
 				FC58DE9A2D6A2742005C0202 /* ProfileView.swift in Sources */,
