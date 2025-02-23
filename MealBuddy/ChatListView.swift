@@ -43,7 +43,7 @@ struct ChatListView: View {
                                     .frame(width: 40, height: 40)
                                     .foregroundColor(.gray)
                                 VStack(alignment: .leading) {
-                                    Text(match.user2Email)
+                                    Text(match.displayEmail ?? "Unknown User")
                                         .font(.headline)
                                         .foregroundColor(Color(hex: "#66574A"))
                                     Text("Tap to chat")
@@ -67,28 +67,45 @@ struct ChatListView: View {
         guard let userEmail = Auth.auth().currentUser?.email else { return }
         
         db.collection("matches")
-            .whereField("user1Email", isEqualTo: userEmail)
+            .whereFilter(Filter.orFilter([
+                Filter.whereField("user1Email", isEqualTo: userEmail),
+                Filter.whereField("user2Email", isEqualTo: userEmail)
+            ]))
             .getDocuments { snapshot, error in
                 isLoading = false
                 if let error = error {
                     print("Error fetching matches: \(error.localizedDescription)")
                 } else {
                     matches = snapshot?.documents.compactMap { document in
-                        try? document.data(as: Match.self)
+                        if let matchData = try? document.data(as: Match.self) {
+                            // Create a new instance with the correct display email
+                            return Match(
+                                id: matchData.id,
+                                user1Email: matchData.user1Email,
+                                user2Email: matchData.user2Email,
+                                requestID: matchData.requestID,
+                                messages: matchData.messages,
+                                displayEmail: (matchData.user1Email == userEmail) ? matchData.user2Email : matchData.user1Email
+                            )
+                        }
+                        return nil
                     } ?? []
                 }
             }
     }
-}
 
+
+}
 struct Match: Identifiable, Codable {
     @DocumentID var id: String?
     var user1Email: String
     var user2Email: String
     var requestID: String
     var messages: [Message]
+    
+    // Computed property to store the correct email to display
+    var displayEmail: String?
 }
-
 struct Message: Codable {
     var sender: String
     var text: String
