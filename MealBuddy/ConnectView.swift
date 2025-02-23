@@ -32,14 +32,18 @@ struct ConnectView: View {
 
                 ZStack {
                     RoundedRectangle(cornerRadius: 12)
-                        .fill(.white)
+                        .fill(Color(hex: "#eee2d2"))
                         .frame(height: 100)
 
                     TextEditor(text: $inviteMessage)
                         .frame(height: 100)
                         .padding(8)
-                        .background(Color.clear)
+                        .background(Color(hex: "#eee2d2"))
+                        .scrollContentBackground(.hidden)
+                        .cornerRadius(12)
+                        .foregroundColor(.black)
                 }
+
 
                 HStack {
                     Button(action: {
