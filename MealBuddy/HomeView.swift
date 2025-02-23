@@ -55,7 +55,6 @@ struct MainTabView: View {
     }
         
 }
-
 struct FilterSheetView: View {
     @Binding var selectedCuisine: String?
     @Binding var selectedEvent: String?
@@ -71,59 +70,76 @@ struct FilterSheetView: View {
     
     var body: some View {
         NavigationStack {
-            VStack {
-                Form {
-                    Section(header: Text("Meal Preferences")) {
-                        Picker("Cuisine", selection: Binding(
-                            get: { selectedCuisine ?? "Any" },
-                            set: { selectedCuisine = $0 == "Any" ? nil : $0 }
-                        )) {
-                            ForEach(cuisineOptions, id: \.self) { Text($0).tag($0) }
-                        }
-                        
-                        Picker("Event", selection: Binding(
-                            get: { selectedEvent ?? "Any" },
-                            set: { selectedEvent = $0 == "Any" ? nil : $0 }
-                        )) {
-                            ForEach(eventOptions, id: \.self) { Text($0).tag($0) }
-                        }
-                    }
-                    
-                    Section(header: Text("Demographic Preferences")) {
-                        Picker("Gender", selection: Binding(
-                            get: { selectedGender ?? "Any" },
-                            set: { selectedGender = $0 == "Any" ? nil : $0 }
-                        )) {
-                            ForEach(genderOptions, id: \.self) { Text($0).tag($0) }
-                        }
-                        
-                        Picker("Age Range", selection: Binding(
-                            get: { selectedAgeRange ?? "Any" },
-                            set: { selectedAgeRange = $0 == "Any" ? nil : $0 }
-                        )) {
-                            ForEach(ageRanges, id: \.self) { Text($0).tag($0) }
-                        }
-                    }
-                    
-                    Section(header: Text("Date")) {
-                        DatePicker("Date", selection: $selectedDate, displayedComponents: .date)
-                    }
-                }
+            ZStack {
+                Color(hex: "#EEE2D2")
+                    .ignoresSafeArea()
                 
-                HStack {
-                    Spacer()
-                    Button(action: onApply) {
-                        Text("Apply Filters")
-                            .bold()
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color(hex: "#CD7741"))
-                            .foregroundColor(.white)
-                            .cornerRadius(30)
+                VStack {
+                    Form {
+                        Section(header: Text("Meal Preferences").foregroundColor(Color(hex: "#655745"))) {
+                            Picker("Cuisine", selection: Binding(
+                                get: { selectedCuisine ?? "Any" },
+                                set: { selectedCuisine = $0 == "Any" ? nil : $0 }
+                            )) {
+                                ForEach(cuisineOptions, id: \.self) { Text($0).tag($0) }
+                            }
+                            .tint(Color(hex: "#655745"))
+                            .accentColor(Color(hex: "#655745"))
+                            
+                            Picker("Event", selection: Binding(
+                                get: { selectedEvent ?? "Any" },
+                                set: { selectedEvent = $0 == "Any" ? nil : $0 }
+                            )) {
+                                ForEach(eventOptions, id: \.self) { Text($0).tag($0) }
+                            }
+                            .tint(Color(hex: "#655745"))
+                            .accentColor(Color(hex: "#655745"))
+                        }
+                        
+                        Section(header: Text("Demographic Preferences").foregroundColor(Color(hex: "#655745"))) {
+                            Picker("Gender", selection: Binding(
+                                get: { selectedGender ?? "Any" },
+                                set: { selectedGender = $0 == "Any" ? nil : $0 }
+                            )) {
+                                ForEach(genderOptions, id: \.self) { Text($0).tag($0) }
+                            }
+                            .tint(Color(hex: "#655745"))
+                            .accentColor(Color(hex: "#655745"))
+                            
+                            Picker("Age Range", selection: Binding(
+                                get: { selectedAgeRange ?? "Any" },
+                                set: { selectedAgeRange = $0 == "Any" ? nil : $0 }
+                            )) {
+                                ForEach(ageRanges, id: \.self) { Text($0).tag($0) }
+                            }
+                            .tint(Color(hex: "#655745"))
+                            .accentColor(Color(hex: "#655745"))
+                        }
+                        
+                        Section(header: Text("Date").foregroundColor(Color(hex: "#655745"))) {
+                            DatePicker("Date", selection: $selectedDate, displayedComponents: .date)
+                                .tint(Color(hex: "#655745"))
+                                .accentColor(Color(hex: "#655745"))
+                        }
                     }
-                    Spacer()
+                    .scrollContentBackground(.hidden)
+                    .tint(Color(hex: "#655745"))
+                    
+                    HStack {
+                        Spacer()
+                        Button(action: onApply) {
+                            Text("Apply Filters")
+                                .bold()
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(Color(hex: "#CD7741"))
+                                .foregroundColor(.white)
+                                .cornerRadius(30)
+                        }
+                        Spacer()
+                    }
+                    .padding()
                 }
-                .padding()
             }
             .navigationBarTitle("Filter Requests", displayMode: .inline)
         }
@@ -284,6 +300,7 @@ struct HomeView: View {
                 .padding()
                 .background(RoundedRectangle(cornerRadius: 30).fill(Color(UIColor.systemBrown).opacity(0.2))) // Rounded rectangle around the whole section
                 .padding(.bottom, 120) // Adjust bottom padding for better spacing between buttons
+                .padding(.horizontal, 15)
                 
                 
                 Spacer()
@@ -314,7 +331,7 @@ struct HomeView: View {
                     showFilterSheet = false
                     fetchConnectionRequests() // Fetch after applying filters
                 }
-            )
+            ).background(Color(hex: "#EEE2D2").edgesIgnoringSafeArea(.all))
         }
     }
     
@@ -522,9 +539,13 @@ struct RequestCard: View {
                 Text(request.username)
                     .font(.title)
                     .foregroundColor(Color(hex: "#655745"))
-                
+                Text("Event: " + request.event)
+                    .font(.headline)
+                    .foregroundColor(Color(hex: "#655745"))
+                    .padding(.horizontal, 10)
+                    .padding(.bottom, 7)
                 HStack(spacing: 30) {
-                    Text("Looking for: " + request.cuisine)
+                    Text("Cuisine: " + request.cuisine)
                         .font(.headline)
                         .foregroundColor(Color(hex: "#655745"))
                         .padding(.horizontal, 10)
