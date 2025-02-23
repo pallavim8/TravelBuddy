@@ -228,28 +228,42 @@ struct InviteDetailsView: View {
             if isLoading {
                 ProgressView("Loading user details...")
                     .padding()
-            } else if let userDetails = userDetails {
-                VStack(alignment: .leading, spacing: 20) {
-                    Text("Invited by: \(invite.email)")
-                        .font(.headline)
-                    Text("Message: \(invite.message)")
-                        .font(.subheadline)
-                    Text("Username: \(userDetails.username)")
-                        .font(.subheadline)
-                    Text("Dietary Restrictions: \(userDetails.dietaryRestrictions)")
-                        .font(.subheadline)
-                    Text("Preferred Price Range: \(userDetails.priceRange)")
-                        .font(.subheadline)
-                }
-                .padding()
-                .background(RoundedRectangle(cornerRadius: 15).fill(Color.white).shadow(radius: 5))
-                .padding(.horizontal)
             } else {
-                Text("No details available")
-                    .font(.subheadline)
-                    .foregroundColor(.gray)
-            }
+                Image(systemName: "person.circle.fill")
+                                            .resizable()
+                                            .scaledToFit()
+                                            .frame(width: 50, height: 50)
+                                            .foregroundColor(Color(hex: "#655745"))
+                                            .padding(.bottom, 10)
+                if let userDetails = userDetails {
+                    VStack(alignment: .leading, spacing: 20) {
+                        Text("Invited by: \(invite.email)")
+                            .font(.headline)
 
+                        Text("Message: \(invite.message)")
+                            .font(.subheadline)
+
+                        // Showing the user's details
+                        Text("Username: \(userDetails.username)")
+                            .font(.subheadline)
+
+                        Text("Dietary Restrictions: \(userDetails.dietaryRestrictions)")
+                            .font(.subheadline)
+
+                        Text("Preferred Price Range: \(userDetails.priceRange)")
+                            .font(.subheadline)
+                    }
+                    .padding()
+                    .background(RoundedRectangle(cornerRadius: 15).fill(Color(UIColor.systemGray6)))
+                    .background(RoundedRectangle(cornerRadius: 15).fill(Color.white).shadow(radius: 5))
+                    .padding(.horizontal)
+                } else {
+                    Text("No details available")
+                        .font(.subheadline)
+                        .foregroundColor(.gray)
+                }
+            }
+            
             Button(action: {
                 handleMatchRequest()
             }) {
@@ -268,7 +282,8 @@ struct InviteDetailsView: View {
             checkMatchStatus()
         }
         .padding()
-        .background(Color(hex: "#EEE2D2"))
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color(hex: "#EEE3D2"))
     }
 
     func fetchUserDetails(email: String) {
@@ -376,7 +391,7 @@ struct InviteDetailsView: View {
         case .matchedWithSomeoneElse:
             return Color.gray
         case .matchedWithInvitee:
-            return Color.red
+            return Color(hex: "#bfbdbc")
         }
     }
 }
