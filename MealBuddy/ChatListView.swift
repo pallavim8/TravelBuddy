@@ -43,7 +43,7 @@ struct ChatListView: View {
                                     .frame(width: 40, height: 40)
                                     .foregroundColor(.gray)
                                 VStack(alignment: .leading) {
-                                    Text(match.displayEmail ?? "Unknown User")
+                                    Text(match.mealDetails ?? "Fetching details...")  // Show meal details
                                         .font(.headline)
                                         .foregroundColor(Color(hex: "#66574A"))
                                     Text("Tap to chat")
@@ -55,6 +55,8 @@ struct ChatListView: View {
                             .padding(.vertical, 5)
                         }
                     }
+
+
                 }
             }
             .onAppear { fetchMatches() }
@@ -65,7 +67,7 @@ struct ChatListView: View {
     
     func fetchMatches() {
         guard let userEmail = Auth.auth().currentUser?.email else { return }
-        
+
         db.collection("matches")
             .whereFilter(Filter.orFilter([
                 Filter.whereField("user1Email", isEqualTo: userEmail),
@@ -76,36 +78,60 @@ struct ChatListView: View {
                 if let error = error {
                     print("Error fetching matches: \(error.localizedDescription)")
                 } else {
-                    matches = snapshot?.documents.compactMap { document in
-                        if let matchData = try? document.data(as: Match.self) {
-                            // Create a new instance with the correct display email
-                            return Match(
-                                id: matchData.id,
-                                user1Email: matchData.user1Email,
-                                user2Email: matchData.user2Email,
-                                requestID: matchData.requestID,
-                                messages: matchData.messages,
-                                displayEmail: (matchData.user1Email == userEmail) ? matchData.user2Email : matchData.user1Email
-                            )
+                    var fetchedMatches: [Match] = []
+                    let group = DispatchGroup()  // To track async requests
+
+                    for document in snapshot?.documents ?? [] {
+                        if var match = try? document.data(as: Match.self) {  // Make match mutable
+                            print("Fetched match with requestID: \(match.requestID)") // Debug print
+                            group.enter()  // Start tracking request fetch
+
+                            db.collection("requests").document(match.requestID).getDocument { requestSnapshot, requestError in
+                                if let requestError = requestError {
+                                    print("Error fetching request details: \(requestError.localizedDescription)")
+                                }
+
+                                if let requestData = requestSnapshot?.data() {
+                                    let meal = requestData["meal"] as? String ?? "Unknown"
+                                    let mealDate = requestData["date"] as? String ?? "Unknown Date"
+                                    match.mealDetails = "\(meal) - \(mealDate)"
+                                    print("Updated match with meal details: \(match.mealDetails ?? "N/A")") // Debug print
+                                } else {
+                                    print("No request data found for requestID: \(match.requestID)")
+                                }
+
+                                // Append updated match to the array inside DispatchGroup
+                                DispatchQueue.main.async {
+                                    fetchedMatches.append(match)
+                                }
+                                group.leave()  // Mark request fetch complete
+                            }
                         }
-                        return nil
-                    } ?? []
+                    }
+
+                    group.notify(queue: .main) {
+                        DispatchQueue.main.async {
+                            self.matches = fetchedMatches  // Update state after all requests are fetched
+                            print("Final matches updated: \(self.matches)")
+                        }
+                    }
                 }
             }
     }
 
 
+
 }
+
 struct Match: Identifiable, Codable {
     @DocumentID var id: String?
     var user1Email: String
     var user2Email: String
     var requestID: String
     var messages: [Message]
-    
-    // Computed property to store the correct email to display
-    var displayEmail: String?
+    var mealDetails: String?  // Add this to store meal type + date
 }
+
 struct Message: Codable {
     var sender: String
     var text: String

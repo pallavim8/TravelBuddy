@@ -14,6 +14,7 @@ struct ChatView: View {
     let match: Match
     @State private var messages: [Message] = []
     @State private var newMessage = ""
+    @State private var otherUserName: String? = nil
     let db = Firestore.firestore()
     
     var body: some View {
@@ -57,10 +58,27 @@ struct ChatView: View {
                 .padding()
             }
         }
-        .navigationTitle("Chat with \(match.user2Email)")
-        .onAppear { fetchMessages() }
+        .navigationTitle("Chat with \(otherUserName ?? "Loading...")")
+        .onAppear {
+            fetchMessages()
+            fetchOtherUserName()
+        }
     }
-
+    
+    func fetchOtherUserName() {
+            let currentUserEmail = Auth.auth().currentUser?.email ?? ""
+            let otherUserEmail = match.user1Email == currentUserEmail ? match.user2Email : match.user1Email
+            
+            db.collection("users").whereField("email", isEqualTo: otherUserEmail)
+                .getDocuments { snapshot, error in
+                    if let error = error {
+                        print("Error fetching username: \(error.localizedDescription)")
+                    } else if let document = snapshot?.documents.first {
+                        self.otherUserName = document.data()["username"] as? String ?? "Unknown"
+                    }
+                }
+        }
+    
     func fetchMessages() {
         db.collection("matches").document(match.id ?? "")
             .addSnapshotListener { document, error in
