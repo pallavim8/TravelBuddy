@@ -78,7 +78,7 @@ struct ContentView: View {
 
                 VStack {
 
-                    Text("Connect with foodies nearby\nfor culinary adventures")
+                    Text("Moving to a new city is hard. Making new friends shouldn’t be.")
 
                         .font(.system(size: 18, weight: .medium))
 
@@ -89,6 +89,8 @@ struct ContentView: View {
                         .opacity(opacityText)
 
                         .offset(y: offsetText)
+                    
+                        .padding(.horizontal, 15)
 
                     
 
