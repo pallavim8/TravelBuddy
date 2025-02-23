@@ -154,12 +154,12 @@ struct HomeView: View {
         NavigationStack {
             VStack(alignment: .leading) {
                 HStack(spacing: 0) {
-                    Image("forkKnife")
+                    Image("globe")
                         .resizable()
                         .scaledToFit()
                         .frame(width: 45, height: 45)
                     
-                    Text("MEALBUDDY")
+                    Text("TRAVELBUDDY")
                         .font(.largeTitle).bold()
                         .foregroundColor(.black)
                     Spacer()
@@ -173,7 +173,6 @@ struct HomeView: View {
                     }
                     
                 }
-                .padding(.horizontal, 15)
                 .padding(.top, 100)
                 Text("Welcome, \(userName)!")
                     .font(.title)
