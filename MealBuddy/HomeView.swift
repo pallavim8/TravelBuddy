@@ -370,6 +370,7 @@ struct HomeView: View {
         }
 
         let userRef = db.collection("users").document(Auth.auth().currentUser?.uid ?? "unknown")
+        
 
         userRef.getDocument { document, error in
             if let error = error {
@@ -388,7 +389,7 @@ struct HomeView: View {
             print("Preferred radius: \(preferredRadius) miles")
 
             var query: Query = db.collection("requests")
-
+            
             // Apply filters **only if "Any" is not selected**
             if let cuisine = selectedCuisine, cuisine != "Any" {
                 query = query.whereField("cuisine", isEqualTo: cuisine)
@@ -438,6 +439,13 @@ struct HomeView: View {
                             return nil
                         }
                     }
+                    
+                    if let requestEmail = request?.email,
+                       let currentUserEmail = Auth.auth().currentUser?.email,
+                       requestEmail == currentUserEmail {
+                        return nil
+                    }
+                    
 
                     // Handle location filtering by distance
                     if let requestLocation = request?.location {
