@@ -19,13 +19,13 @@ struct SplashScreen: View {
     var body: some View {
         VStack {
             VStack {
-                Image("mealbuddy")
+                Image("travelbuddy")
                     .resizable()
                     .scaledToFit()
                     .frame(width: 300, height: 300)
 
 
-                Text("MEALBUDDY")
+                Text("TRAVELBUDDY")
                     .font(.system(size: 40, weight: .heavy))
                     .foregroundColor(.black)
                     .tracking(1)

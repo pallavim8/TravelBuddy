@@ -18,12 +18,12 @@ struct AuthView: View {
         NavigationView {
             VStack {
                 HStack(spacing: 0) {
-                    Image("forkKnife")
+                    Image("globe")
                         .resizable()
                         .scaledToFit()
-                        .frame(width: 45, height: 45)
+                        .frame(width: 70, height: 70)
                     
-                    Text("MEALBUDDY")
+                    Text("TRAVELBUDDY")
                         .font(.largeTitle).bold()
                         .foregroundColor(.black)
                 }

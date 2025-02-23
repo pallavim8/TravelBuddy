@@ -54,7 +54,7 @@ struct ContentView: View {
 
             VStack(spacing: 20) {
 
-                Image("mealbuddy")
+                Image("travelbuddy")
 
                     .resizable()
 
@@ -64,7 +64,7 @@ struct ContentView: View {
 
                 
 
-                Text("MEALBUDDY")
+                Text("TRAVELBUDDY")
 
                     .font(.system(size: 40, weight: .heavy))
 
