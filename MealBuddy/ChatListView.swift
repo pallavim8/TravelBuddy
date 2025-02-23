@@ -95,9 +95,10 @@ struct ChatListView: View {
                                 }
 
                                 if let requestData = requestSnapshot?.data() {
-                                    let meal = requestData["meal"] as? String ?? "Unknown"
+                                    let meal = requestData["cuisine"] as? String ?? "Unknown"
+                                    let event = requestData["event"] as? String ?? "Unknown"
                                     let mealDate = requestData["date"] as? String ?? "Unknown Date"
-                                    match.mealDetails = "\(meal) - \(mealDate)"
+                                    match.mealDetails = "\(meal) & \(event) - \(mealDate)"
                                     print("Updated match with meal details: \(match.mealDetails ?? "N/A")")
                                 } else {
                                     print("No request data found for requestID: \(match.requestID)")

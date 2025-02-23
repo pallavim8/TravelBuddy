@@ -3,6 +3,17 @@ import Firebase
 import FirebaseAuth
 import Foundation
 
+func mapEventToYelpCategory(event: String) -> String {
+    let eventMapping: [String: String] = [
+        "Movie": "movietheaters",
+        "Amusement Park": "amusementparks",
+        "Hiking": "hiking",
+        "Museum": "museums",
+        "Shopping": "shoppingcenters"
+    ]
+    return eventMapping[event] ?? "arts" // Default to restaurants if no match
+}
+
 struct ChatView: View {
     let match: Match
     @State private var messages: [Message] = []
@@ -43,7 +54,7 @@ struct ChatView: View {
             // **Updated Recommendations Section**
             if !recommendedPlaces.isEmpty || !recommendedEvents.isEmpty {
                 VStack(alignment: .leading) {
-                    Text("Recommendations:")
+                    Text("Recommendation:")
                         .font(.headline)
                         .padding(.top)
                     
@@ -186,38 +197,38 @@ struct ChatView: View {
         }
     
     func fetchRecommendations() {
-        print("Fetching recommendations for match ID: \(match.requestID)")
-        db.collection("requests").document(match.requestID).getDocument { document, error in
-            if let document = document, document.exists {
-                let data = document.data()
-                let preferredCuisine = data?["cuisine"] as? String ?? "Any"
-                let selectedEvent = data?["event"] as? String ?? "Any"
-                let preferredDistance = data?["maxDistance"] as? Double ?? 10.0
-                let userLocation = data?["location"] as? [String: Double]
+            print("Fetching recommendations for match ID: \(match.requestID)") // Debug message
+            db.collection("requests").document(match.requestID).getDocument { document, error in
+                if let document = document, document.exists {
+                    let data = document.data()
+                    let preferredCuisine = data?["cuisine"] as? String ?? "Any"
+                    let selectedEvent = data?["event"] as? String ?? "Any"
+                    let preferredDistance = data?["maxDistance"] as? Double ?? 10.0
+                    let userLocation = data?["location"] as? [String: Double]  // Location should be a dictionary
 
-                if let location = userLocation, let latitude = location["latitude"], let longitude = location["longitude"], latitude != 0.0, longitude != 0.0 {
-                    
-                    fetchYelpPlaces(latitude: latitude, longitude: longitude, cuisine: preferredCuisine, maxDistance: preferredDistance) { places in
-                        DispatchQueue.main.async {
-                            self.recommendedPlaces.append(contentsOf: places)
+                    print("Request data: Cuisine = \(preferredCuisine), Max Distance = \(preferredDistance), Location = \(userLocation ?? [:])") // Debug message
+
+                    // Check if location is valid
+                    if let location = userLocation, let latitude = location["latitude"], let longitude = location["longitude"], latitude != 0.0, longitude != 0.0 {
+                        fetchYelpPlaces(latitude: latitude, longitude: longitude, cuisine: preferredCuisine, maxDistance: preferredDistance) { places in
+                            print("Yelp recommendations fetched: \(places.count) places found") // Debug message
+                            self.recommendedPlaces = places
                         }
+
+                        // Fetch event recommendation
+                        fetchYelpEvents(latitude: latitude, longitude: longitude, eventCategory: mapEventToYelpCategory(event: selectedEvent), maxDistance: preferredDistance) { events in
+                                            self.recommendedEvents = events
+                                        }
+                    } else {
+                        print("Invalid location data. Cannot fetch recommendations.") // Debug message
+                        // Handle invalid location case (e.g., use a default location)
                     }
-                    
-                    fetchYelpEvents(latitude: latitude, longitude: longitude, eventCategory: selectedEvent, maxDistance: preferredDistance) { events in
-                        DispatchQueue.main.async {
-                            self.recommendedEvents.append(contentsOf: events)
-                        }
-                    }
-                    
                 } else {
-                    print("Invalid location data. Cannot fetch recommendations.")
+                    print("Error fetching request data: \(error?.localizedDescription ?? "Unknown error")") // Debug message
                 }
-            } else {
-                print("Error fetching request data: \(error?.localizedDescription ?? "Unknown error")")
             }
         }
     }
-}
 
 struct Place: Identifiable {
     let id = UUID()
@@ -225,101 +236,104 @@ struct Place: Identifiable {
     let address: String
     let rating: Double
 }
-
 func fetchYelpPlaces(latitude: Double, longitude: Double, cuisine: String, maxDistance: Double, completion: @escaping ([YelpBusiness]) -> Void) {
-    let apiKey = "d1nLq_zTl0OHO8T5bmU1I3yLeNNaZoKEzWezPhMQPcgdYlxnrhZhP7fHijkmExpXYULg5f1rkUtK2Ha9Ugkp_nAI4XyQXkghKEFzl8pdpfnuEM5q1TYv1j2pHxsZZHYx" // Replace with your actual Yelp API key
-    let urlString = "https://api.yelp.com/v3/businesses/search?term=\(cuisine)&latitude=\(latitude)&longitude=\(longitude)&radius=\(Int(maxDistance * 1609.34))&sort_by=rating&limit=5"
-    
-    guard let url = URL(string: urlString.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "") else {
-        print("Invalid Yelp URL")
-        completion([])
-        return
-    }
+    let apiKey = "d1nLq_zTl0OHO8T5bmU1I3yLeNNaZoKEzWezPhMQPcgdYlxnrhZhP7fHijkmExpXYULg5f1rkUtK2Ha9Ugkp_nAI4XyQXkghKEFzl8pdpfnuEM5q1TYv1j2pHxsZZHYx" // Replace with your actual Yelp API key
+    let urlString = "https://api.yelp.com/v3/businesses/search?term=\(cuisine)&latitude=\(latitude)&longitude=\(longitude)&radius=\(Int(maxDistance * 1609.34))&sort_by=rating&limit=5"
 
-    var request = URLRequest(url: url)
-    request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
-    request.httpMethod = "GET"
+    guard let url = URL(string: urlString.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "") else {
+        print("Invalid Yelp URL")
+        completion([])
+        return
+    }
 
-    print("Fetching Yelp places with URL: \(urlString)") // Print the URL being requested
+    var request = URLRequest(url: url)
+    request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+    request.httpMethod = "GET"
 
-    URLSession.shared.dataTask(with: request) { data, response, error in
-        guard let data = data, error == nil else {
-            print("Yelp API Error: \(error?.localizedDescription ?? "Unknown error")")
-            completion([])
-            return
-        }
+    print("Fetching Yelp places with URL: \(urlString)") // Print the URL being requested
 
-        do {
-            let decodedResponse = try JSONDecoder().decode(YelpResponse.self, from: data)
-            print("Yelp Response: \(decodedResponse.businesses.count) places found")
-            DispatchQueue.main.async {
-                completion(decodedResponse.businesses)
-            }
-        } catch {
-            print("Failed to decode Yelp response: \(error.localizedDescription)")
-            completion([])
-        }
-    }.resume()
+    URLSession.shared.dataTask(with: request) { data, response, error in
+        guard let data = data, error == nil else {
+            print("Yelp API Error: \(error?.localizedDescription ?? "Unknown error")")
+            completion([])
+            return
+        }
+        
+        if let jsonString = String(data: data, encoding: .utf8) {
+                print("Raw Yelp Events JSON Response: \(jsonString)")
+            }
+
+        do {
+            let decodedResponse = try JSONDecoder().decode(YelpResponse.self, from: data)
+            print("Yelp Response: \(decodedResponse.businesses.count) places found")
+            DispatchQueue.main.async {
+                completion(decodedResponse.businesses)
+            }
+        } catch {
+            print("Failed to decode Yelp response: \(error.localizedDescription)")
+            completion([])
+        }
+    }.resume()
 }
 
 func fetchYelpEvents(latitude: Double, longitude: Double, eventCategory: String, maxDistance: Double, completion: @escaping ([YelpEvent]) -> Void) {
-    let apiKey = "d1nLq_zTl0OHO8T5bmU1I3yLeNNaZoKEzWezPhMQPcgdYlxnrhZhP7fHijkmExpXYULg5f1rkUtK2Ha9Ugkp_nAI4XyQXkghKEFzl8pdpfnuEM5q1TYv1j2pHxsZZHYx"
-    let urlString = "https://api.yelp.com/v3/events?latitude=\(latitude)&longitude=\(longitude)&radius=\(Int(maxDistance * 1609.34))&categories=\(eventCategory)&limit=3"
+    let apiKey = "d1nLq_zTl0OHO8T5bmU1I3yLeNNaZoKEzWezPhMQPcgdYlxnrhZhP7fHijkmExpXYULg5f1rkUtK2Ha9Ugkp_nAI4XyQXkghKEFzl8pdpfnuEM5q1TYv1j2pHxsZZHYx"
+    let urlString = "https://api.yelp.com/v3/events?latitude=\(latitude)&longitude=\(longitude)&radius=\(Int(maxDistance * 1609.34))&categories=\(eventCategory)&limit=3"
 
-    guard let url = URL(string: urlString.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "") else {
-        print("Invalid Yelp Events URL")
-        completion([])
-        return
-    }
+    guard let url = URL(string: urlString.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "") else {
+        print("Invalid Yelp Events URL")
+        completion([])
+        return
+    }
 
-    var request = URLRequest(url: url)
-    request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
-    request.httpMethod = "GET"
+    var request = URLRequest(url: url)
+    request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+    request.httpMethod = "GET"
 
-    print("Fetching Yelp events with URL: \(urlString)")
+    print("Fetching Yelp events with URL: \(urlString)")
 
-    URLSession.shared.dataTask(with: request) { data, response, error in
-        guard let data = data, error == nil else {
-            print("Yelp API Event Error: \(error?.localizedDescription ?? "Unknown error")")
-            completion([])
-            return
-        }
+    URLSession.shared.dataTask(with: request) { data, response, error in
+        guard let data = data, error == nil else {
+            print("Yelp API Event Error: \(error?.localizedDescription ?? "Unknown error")")
+            completion([])
+            return
+        }
 
-        do {
-            let decodedResponse = try JSONDecoder().decode(YelpEventResponse.self, from: data)
-            print("Yelp Events Fetched: \(decodedResponse.events.count) events found")
-            DispatchQueue.main.async {
-                completion(decodedResponse.events)
-            }
-        } catch {
-            print("Failed to decode Yelp events response: \(error.localizedDescription)")
-            completion([])
-        }
-    }.resume()
+        do {
+            let decodedResponse = try JSONDecoder().decode(YelpEventResponse.self, from: data)
+            print("Yelp Events Fetched: \(decodedResponse.events.count) events found")
+            DispatchQueue.main.async {
+                completion(decodedResponse.events)
+            }
+        } catch {
+            print("Failed to decode Yelp events response: \(error.localizedDescription)")
+            completion([])
+        }
+    }.resume()
 }
 
 struct YelpEventResponse: Codable {
-    let events: [YelpEvent]
+        let events: [YelpEvent]
 }
 
 struct YelpEvent: Codable, Identifiable {
-    let id: String
-    let name: String
-    let location: YelpLocation
-    let is_free: Bool?
-    let cost: Double?
-    let event_site_url: String?
-
-    struct YelpLocation: Codable {
-        let address1: String?
-        let city: String?
-        let state: String?
-        let zip_code: String?
-        
-        var fullAddress: String {
-            [address1, city, state, zip_code].compactMap { $0 }.joined(separator: ", ")
-        }
-    }
+        let id: String
+        let name: String
+        let location: YelpLocation
+        let is_free: Bool?
+        let cost: Double?
+        let event_site_url: String?
+    
+        struct YelpLocation: Codable {
+                let address1: String?
+                let city: String?
+                let state: String?
+                let zip_code: String?
+                
+                var fullAddress: String {
+                        [address1, city, state, zip_code].compactMap { $0 }.joined(separator: ", ")
+                    }
+            }
 }
 
 
@@ -328,19 +342,19 @@ struct YelpResponse: Codable {
 }
 
 struct YelpBusiness: Codable, Identifiable {
-    let id: String
-    let name: String
-    let location: YelpLocation
-    let rating: Double?
-
-    struct YelpLocation: Codable {
-        let address1: String?
-        let city: String?
-        let state: String?
-        let zip_code: String?
-        
-        var fullAddress: String {
-            [address1, city, state, zip_code].compactMap { $0 }.joined(separator: ", ")
-        }
-    }
+        let id: String
+        let name: String
+        let location: YelpLocation
+        let rating: Double?
+    
+        struct YelpLocation: Codable {
+                let address1: String?
+                let city: String?
+                let state: String?
+                let zip_code: String?
+                
+                var fullAddress: String {
+                        [address1, city, state, zip_code].compactMap { $0 }.joined(separator: ", ")
+                    }
+            }
 }
