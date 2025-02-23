@@ -21,7 +21,7 @@ struct MainTabView: View {
             MyRequestsView()
                 .tabItem {
                     Image(systemName: "envelope.fill")
-                    Text("Your Requests")
+                    Text("Inbox")
                 }
                 .tag(1)
 
@@ -41,7 +41,7 @@ struct MainTabView: View {
             NewRequestView()
                 .tabItem {
                     Image(systemName: "plus.circle.fill")
-                    Text("New Request")
+                    Text("New Buddy")
                 }
                 .tag(4)
         }
@@ -281,7 +281,7 @@ struct HomeView: View {
                         .padding(.horizontal)
                     
                     HStack {
-                        Text("Don’t feel like eating alone? Make a new request to match with people in your area")
+                        Text("Find a new buddy!")
                             .font(.subheadline)
                             .foregroundColor(.gray)
                             .padding(.leading)
