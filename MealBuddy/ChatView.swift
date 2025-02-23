@@ -26,7 +26,7 @@ struct YelpBusiness: Codable, Identifiable {
 }
 
 func fetchYelpPlaces(latitude: Double, longitude: Double, cuisine: String, maxDistance: Double, completion: @escaping ([YelpBusiness]) -> Void) {
-    let apiKey = "d1nLq_zTl0OHO8T5bmU1I3yLeNNaZoKEzWezPhMQPcgdYlxnrhZhP7fHijkmExpXYULg5f1rkUtK2Ha9Ugkp_nAI4XyQXkghKEFzl8pdpfnuEM5q1TYv1j2pHxsZZHYx"
+    let apiKey = "d1nLq_zTl0OHO8T5bmU1I3yLeNNaZoKEzWezPhMQPcgdYlxnrhZhP7fHijkmExpXYULg5f1rkUtK2Ha9Ugkp_nAI4XyQXkghKEFzl8pdpfnuEM5q1TYv1j2pHxsZZHYx" // Replace with your actual Yelp API key
     let urlString = "https://api.yelp.com/v3/businesses/search?term=\(cuisine)&latitude=\(latitude)&longitude=\(longitude)&radius=\(Int(maxDistance * 1609.34))&sort_by=rating&limit=5"
     
     guard let url = URL(string: urlString.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "") else {
@@ -39,6 +39,8 @@ func fetchYelpPlaces(latitude: Double, longitude: Double, cuisine: String, maxDi
     request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
     request.httpMethod = "GET"
 
+    print("Fetching Yelp places with URL: \(urlString)") // Print the URL being requested
+
     URLSession.shared.dataTask(with: request) { data, response, error in
         guard let data = data, error == nil else {
             print("Yelp API Error: \(error?.localizedDescription ?? "Unknown error")")
@@ -48,6 +50,7 @@ func fetchYelpPlaces(latitude: Double, longitude: Double, cuisine: String, maxDi
 
         do {
             let decodedResponse = try JSONDecoder().decode(YelpResponse.self, from: data)
+            print("Yelp Response: \(decodedResponse.businesses.count) places found")
             DispatchQueue.main.async {
                 completion(decodedResponse.businesses)
             }
@@ -137,16 +140,22 @@ struct ChatView: View {
     }
 
     func fetchMessages() {
+        print("Fetching messages for match ID: \(match.id ?? "Unknown ID")") // Debug message
         db.collection("matches").document(match.id ?? "")
             .addSnapshotListener { document, error in
                 if let document = document, document.exists {
                     if let matchData = try? document.data(as: Match.self) {
                         self.messages = matchData.messages.sorted { $0.timestamp.dateValue() < $1.timestamp.dateValue() }
                         
+                        print("Messages fetched: \(self.messages.count) messages") // Debug message
+                        
                         if messages.isEmpty {
+                            print("No messages found. Fetching recommendations...") // Debug message
                             fetchRecommendations() // Only fetch places if no messages exist
                         }
                     }
+                } else {
+                    print("Error fetching match data: \(error?.localizedDescription ?? "Unknown error")") // Debug message
                 }
             }
     }
@@ -159,12 +168,15 @@ struct ChatView: View {
         var updatedMessages = messages
         updatedMessages.append(message)
         
+        print("Sending message: \(newMessage)") // Debug message
+
         db.collection("matches").document(match.id ?? "").updateData([
             "messages": updatedMessages.map { try! Firestore.Encoder().encode($0) }
         ]) { error in
             if let error = error {
-                print("Error sending message: \(error.localizedDescription)")
+                print("Error sending message: \(error.localizedDescription)") // Debug message
             } else {
+                print("Message sent successfully!") // Debug message
                 newMessage = ""
             }
         }
@@ -174,32 +186,42 @@ struct ChatView: View {
         let currentUserEmail = Auth.auth().currentUser?.email ?? ""
         let otherUserEmail = match.user1Email == currentUserEmail ? match.user2Email : match.user1Email
         
+        print("Fetching username for user: \(otherUserEmail)") // Debug message
+        
         db.collection("users").whereField("email", isEqualTo: otherUserEmail)
             .getDocuments { snapshot, error in
                 if let error = error {
-                    print("Error fetching username: \(error.localizedDescription)")
+                    print("Error fetching username: \(error.localizedDescription)") // Debug message
                 } else if let document = snapshot?.documents.first {
                     self.otherUserName = document.data()["username"] as? String ?? "Unknown"
+                    print("Fetched username: \(self.otherUserName ?? "Unknown")") // Debug message
                 }
             }
     }
 
     func fetchRecommendations() {
+        print("Fetching recommendations for match ID: \(match.requestID)") // Debug message
         db.collection("requests").document(match.requestID).getDocument { document, error in
             if let document = document, document.exists {
                 let data = document.data()
                 let preferredCuisine = data?["cuisine"] as? String ?? "Any"
                 let preferredDistance = data?["maxDistance"] as? Double ?? 10.0
-                let userLocation = data?["location"] as? GeoPoint
+                let userLocation = data?["location"] as? [String: Double]  // Location should be a dictionary
+
+                print("Request data: Cuisine = \(preferredCuisine), Max Distance = \(preferredDistance), Location = \(userLocation ?? [:])") // Debug message
                 
-                if let location = userLocation {
-                    let latitude = location.latitude
-                    let longitude = location.longitude
-                    
+                // Check if location is valid
+                if let location = userLocation, let latitude = location["latitude"], let longitude = location["longitude"], latitude != 0.0, longitude != 0.0 {
                     fetchYelpPlaces(latitude: latitude, longitude: longitude, cuisine: preferredCuisine, maxDistance: preferredDistance) { places in
+                        print("Yelp recommendations fetched: \(places.count) places found") // Debug message
                         self.recommendedPlaces = places
                     }
+                } else {
+                    print("Invalid location data. Cannot fetch recommendations.") // Debug message
+                    // Handle invalid location case (e.g., use a default location)
                 }
+            } else {
+                print("Error fetching request data: \(error?.localizedDescription ?? "Unknown error")") // Debug message
             }
         }
     }
@@ -211,4 +233,3 @@ struct Place: Identifiable {
     let address: String
     let rating: Double
 }
-
