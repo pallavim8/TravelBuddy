@@ -1,46 +1,117 @@
-//
-//  ChatView.swift
-//  MealBuddy
-//
-//  Created by Chinju on 2/22/25.
-//
-
-
 import SwiftUI
 import Firebase
 import FirebaseAuth
+import Foundation
+
+struct YelpResponse: Codable {
+    let businesses: [YelpBusiness]
+}
+
+struct YelpBusiness: Codable, Identifiable {
+    let id: String
+    let name: String
+    let location: YelpLocation
+    let rating: Double?
+
+    struct YelpLocation: Codable {
+        let address1: String?
+        let city: String?
+        let state: String?
+        let zip_code: String?
+        
+        var fullAddress: String {
+            [address1, city, state, zip_code].compactMap { $0 }.joined(separator: ", ")
+        }
+    }
+}
+
+func fetchYelpPlaces(latitude: Double, longitude: Double, cuisine: String, maxDistance: Double, completion: @escaping ([YelpBusiness]) -> Void) {
+    let apiKey = "d1nLq_zTl0OHO8T5bmU1I3yLeNNaZoKEzWezPhMQPcgdYlxnrhZhP7fHijkmExpXYULg5f1rkUtK2Ha9Ugkp_nAI4XyQXkghKEFzl8pdpfnuEM5q1TYv1j2pHxsZZHYx"
+    let urlString = "https://api.yelp.com/v3/businesses/search?term=\(cuisine)&latitude=\(latitude)&longitude=\(longitude)&radius=\(Int(maxDistance * 1609.34))&sort_by=rating&limit=5"
+    
+    guard let url = URL(string: urlString.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "") else {
+        print("Invalid Yelp URL")
+        completion([])
+        return
+    }
+
+    var request = URLRequest(url: url)
+    request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+    request.httpMethod = "GET"
+
+    URLSession.shared.dataTask(with: request) { data, response, error in
+        guard let data = data, error == nil else {
+            print("Yelp API Error: \(error?.localizedDescription ?? "Unknown error")")
+            completion([])
+            return
+        }
+
+        do {
+            let decodedResponse = try JSONDecoder().decode(YelpResponse.self, from: data)
+            DispatchQueue.main.async {
+                completion(decodedResponse.businesses)
+            }
+        } catch {
+            print("Failed to decode Yelp response: \(error.localizedDescription)")
+            completion([])
+        }
+    }.resume()
+}
 
 struct ChatView: View {
     let match: Match
     @State private var messages: [Message] = []
     @State private var newMessage = ""
     @State private var otherUserName: String? = nil
+    @State private var recommendedPlaces: [YelpBusiness] = [] // Stores restaurant recommendations
     let db = Firestore.firestore()
     
     var body: some View {
         VStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 10) {
-                    ForEach(messages, id: \.timestamp) { message in
+            if messages.isEmpty && !recommendedPlaces.isEmpty {
+                VStack {
+                    Text("No messages yet! Here are some places you might like:")
+                        .font(.headline)
+                        .padding()
+                    
+                    List(recommendedPlaces) { place in
                         HStack {
-                            if message.sender == Auth.auth().currentUser?.email {
-                                Spacer()
-                                Text(message.text)
-                                    .padding()
-                                    .background(Color.blue)
-                                    .foregroundColor(.white)
-                                    .cornerRadius(10)
-                            } else {
-                                Text(message.text)
-                                    .padding()
-                                    .background(Color.gray.opacity(0.2))
-                                    .cornerRadius(10)
-                                Spacer()
+                            VStack(alignment: .leading) {
+                                Text(place.name)
+                                    .font(.headline)
+                                Text("\(place.location.fullAddress) - \(place.rating ?? 0, specifier: "%.1f") ⭐")
+                                    .font(.subheadline)
+                                    .foregroundColor(.gray)
+                            }
+                            Spacer()
+                        }
+                        .padding(.vertical, 5)
+                    }
+                }
+            } else {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 10) {
+                        ForEach(messages, id: \.timestamp) { message in
+                            HStack {
+                                if message.sender == Auth.auth().currentUser?.email {
+                                    Spacer()
+                                    Text(message.text)
+                                        .padding()
+                                        .background(Color.blue)
+                                        .foregroundColor(.white)
+                                        .cornerRadius(10)
+                                } else {
+                                    Text(message.text)
+                                        .padding()
+                                        .background(Color.gray.opacity(0.2))
+                                        .cornerRadius(10)
+                                    Spacer()
+                                }
                             }
                         }
                     }
+                    .padding()
                 }
-                .padding()
             }
 
             HStack {
@@ -64,27 +135,17 @@ struct ChatView: View {
             fetchOtherUserName()
         }
     }
-    
-    func fetchOtherUserName() {
-            let currentUserEmail = Auth.auth().currentUser?.email ?? ""
-            let otherUserEmail = match.user1Email == currentUserEmail ? match.user2Email : match.user1Email
-            
-            db.collection("users").whereField("email", isEqualTo: otherUserEmail)
-                .getDocuments { snapshot, error in
-                    if let error = error {
-                        print("Error fetching username: \(error.localizedDescription)")
-                    } else if let document = snapshot?.documents.first {
-                        self.otherUserName = document.data()["username"] as? String ?? "Unknown"
-                    }
-                }
-        }
-    
+
     func fetchMessages() {
         db.collection("matches").document(match.id ?? "")
             .addSnapshotListener { document, error in
                 if let document = document, document.exists {
                     if let matchData = try? document.data(as: Match.self) {
                         self.messages = matchData.messages.sorted { $0.timestamp.dateValue() < $1.timestamp.dateValue() }
+                        
+                        if messages.isEmpty {
+                            fetchRecommendations() // Only fetch places if no messages exist
+                        }
                     }
                 }
             }
@@ -108,4 +169,46 @@ struct ChatView: View {
             }
         }
     }
+
+    func fetchOtherUserName() {
+        let currentUserEmail = Auth.auth().currentUser?.email ?? ""
+        let otherUserEmail = match.user1Email == currentUserEmail ? match.user2Email : match.user1Email
+        
+        db.collection("users").whereField("email", isEqualTo: otherUserEmail)
+            .getDocuments { snapshot, error in
+                if let error = error {
+                    print("Error fetching username: \(error.localizedDescription)")
+                } else if let document = snapshot?.documents.first {
+                    self.otherUserName = document.data()["username"] as? String ?? "Unknown"
+                }
+            }
+    }
+
+    func fetchRecommendations() {
+        db.collection("requests").document(match.requestID).getDocument { document, error in
+            if let document = document, document.exists {
+                let data = document.data()
+                let preferredCuisine = data?["cuisine"] as? String ?? "Any"
+                let preferredDistance = data?["maxDistance"] as? Double ?? 10.0
+                let userLocation = data?["location"] as? GeoPoint
+                
+                if let location = userLocation {
+                    let latitude = location.latitude
+                    let longitude = location.longitude
+                    
+                    fetchYelpPlaces(latitude: latitude, longitude: longitude, cuisine: preferredCuisine, maxDistance: preferredDistance) { places in
+                        self.recommendedPlaces = places
+                    }
+                }
+            }
+        }
+    }
 }
+
+struct Place: Identifiable {
+    let id = UUID()
+    let name: String
+    let address: String
+    let rating: Double
+}
+
