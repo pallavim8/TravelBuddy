@@ -174,7 +174,7 @@ struct ChatView: View {
                                     Spacer()
                                     Text(message.text)
                                         .padding()
-                                        .background(Color.blue)
+                                        .background(Color(hex: "#cd7741"))
                                         .foregroundColor(.white)
                                         .cornerRadius(10)
                                 } else {
@@ -200,12 +200,13 @@ struct ChatView: View {
                     Image(systemName: "paperplane.fill")
                         .foregroundColor(.white)
                         .padding()
-                        .background(Color.blue)
+                        .background(Color(hex: "#685643"))
                         .clipShape(Circle())
                 }
                 .padding()
             }
         }
+        .background(Color(hex: "eee2d2"))
         .navigationTitle("Chat with \(otherUserName ?? "Loading...")")
         .onAppear {
             fetchMessages()
