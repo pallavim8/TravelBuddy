@@ -191,6 +191,7 @@ struct NewRequestView: View {
             "username": username,
             "age": userAge ?? NSNull(),
             "gender": userGender ?? NSNull(),
+            "invitesSent": [] as NSArray,
             "timestamp": FieldValue.serverTimestamp(),
             "location": userLocation != nil ? [
                 "latitude": userLocation!.latitude,

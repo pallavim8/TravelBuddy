@@ -404,10 +404,11 @@ struct HomeView: View {
                 print("Filtering by gender: \(gender)")
             }
 
-            // Apply **date filter**
+            // Apply date filter
             query = query.whereField("date", isEqualTo: formattedDate)
             print("Filtering by date: \(formattedDate)")
 
+            // Now, fetch documents from Firestore
             query.getDocuments { snapshot, error in
                 isLoading = false
                 if let error = error {
@@ -421,31 +422,33 @@ struct HomeView: View {
                     return
                 }
 
-                print("Found \(documents.count) request(s) before filtering by location and age")
+                print("Found \(documents.count) request(s) before filtering by location")
 
                 connectionRequests = documents.compactMap { document in
+                    var request: ConnectionRequest?
+                    do {
+                        request = try document.data(as: ConnectionRequest.self)
+                    } catch {
+                        print("Error decoding request: \(error)")
+                        return nil
+                    }
 
-                    let request = try? document.data(as: ConnectionRequest.self)
-                    if let requestLocation = request?.location, let requestAge = request?.age{
-                        let requestCoordinate = CLLocation(latitude: requestLocation.latitude, longitude: requestLocation.longitude)
-                        let distance = userLocation.distance(from: requestCoordinate) / 1609.34 // Convert meters to miles
-                        
-                        print("Checking request: \(document.documentID) | Age: \(requestAge) | Distance: \(distance) miles")
-
-                        if let selectedRange = selectedAgeRange, selectedRange != "Any", !ageMatchesRange(requestAge, selectedRange) {
-                            print("Skipping \(document.documentID) - Age \(requestAge) does not match range \(selectedRange)")
+                    // Handle age range filtering
+                    if let requestAge = request?.age, let validRequest = request {
+                        if let ageRange = selectedAgeRange, ageRange != "Any", !ageMatchesRange(requestAge, selectedAgeRange!) {
                             return nil
                         }
-
-                        if distance <= Double(preferredRadius) {
-                            print("Request \(document.documentID) matches all filters!")
-                            return request
-                        } else {
-                            print("Skipping \(document.documentID) - Outside preferred radius")
-                        }
-                    } else {
-                        print("Skipping invalid request (missing location or age)")
                     }
+
+                    // Handle location filtering by distance
+                    if let requestLocation = request?.location {
+                        let requestCoordinate = CLLocation(latitude: requestLocation.latitude, longitude: requestLocation.longitude)
+                        let distance = userLocation.distance(from: requestCoordinate) / 1609.34 // Convert meters to miles
+                        if distance <= Double(preferredRadius) {
+                            return request
+                        }
+                    }
+
                     return nil
                 }
 
