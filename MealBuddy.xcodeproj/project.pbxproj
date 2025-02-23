@@ -480,6 +480,7 @@
 				DEVELOPMENT_TEAM = VC7983NH44;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = TravelBuddy;
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We need your location to match you with nearby meal buddies.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -510,6 +511,7 @@
 				DEVELOPMENT_TEAM = VC7983NH44;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = TravelBuddy;
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We need your location to match you with nearby meal buddies.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
