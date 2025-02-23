@@ -32,7 +32,7 @@ struct ChatListView: View {
                 } else if matches.isEmpty {
                     Text("No chats available. Start matching to chat!")
                         .font(.subheadline)
-                        .foregroundColor(.gray)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                         .padding()
                 } else {
                     List(matches) { match in
@@ -43,7 +43,7 @@ struct ChatListView: View {
                                     .frame(width: 40, height: 40)
                                     .foregroundColor(.gray)
                                 VStack(alignment: .leading) {
-                                    Text(match.mealDetails ?? "Fetching details...")  // Show meal details
+                                    Text(match.mealDetails ?? "Fetching details...")
                                         .font(.headline)
                                         .foregroundColor(Color(hex: "#66574A"))
                                     Text("Tap to chat")
@@ -54,14 +54,17 @@ struct ChatListView: View {
                             }
                             .padding(.vertical, 5)
                         }
+                        .listRowBackground(Color(hex: "#dbc9b1"))
+                        .cornerRadius(30)
                     }
-
-
+                    .listStyle(PlainListStyle())
+                    .background(Color.clear)
                 }
             }
             .onAppear { fetchMatches() }
             .padding()
-            .background(Color(hex: "#EEE2D2"))
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Color(hex: "#EEE3D2"))
         }
     }
     
@@ -79,12 +82,12 @@ struct ChatListView: View {
                     print("Error fetching matches: \(error.localizedDescription)")
                 } else {
                     var fetchedMatches: [Match] = []
-                    let group = DispatchGroup()  // To track async requests
+                    let group = DispatchGroup()
 
                     for document in snapshot?.documents ?? [] {
-                        if var match = try? document.data(as: Match.self) {  // Make match mutable
-                            print("Fetched match with requestID: \(match.requestID)") // Debug print
-                            group.enter()  // Start tracking request fetch
+                        if var match = try? document.data(as: Match.self) {
+                            print("Fetched match with requestID: \(match.requestID)")
+                            group.enter()
 
                             db.collection("requests").document(match.requestID).getDocument { requestSnapshot, requestError in
                                 if let requestError = requestError {
@@ -95,32 +98,28 @@ struct ChatListView: View {
                                     let meal = requestData["meal"] as? String ?? "Unknown"
                                     let mealDate = requestData["date"] as? String ?? "Unknown Date"
                                     match.mealDetails = "\(meal) - \(mealDate)"
-                                    print("Updated match with meal details: \(match.mealDetails ?? "N/A")") // Debug print
+                                    print("Updated match with meal details: \(match.mealDetails ?? "N/A")")
                                 } else {
                                     print("No request data found for requestID: \(match.requestID)")
                                 }
 
-                                // Append updated match to the array inside DispatchGroup
                                 DispatchQueue.main.async {
                                     fetchedMatches.append(match)
                                 }
-                                group.leave()  // Mark request fetch complete
+                                group.leave()
                             }
                         }
                     }
 
                     group.notify(queue: .main) {
                         DispatchQueue.main.async {
-                            self.matches = fetchedMatches  // Update state after all requests are fetched
+                            self.matches = fetchedMatches
                             print("Final matches updated: \(self.matches)")
                         }
                     }
                 }
             }
     }
-
-
-
 }
 
 struct Match: Identifiable, Codable {
