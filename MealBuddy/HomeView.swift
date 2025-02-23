@@ -56,6 +56,80 @@ struct MainTabView: View {
         
 }
 
+struct FilterSheetView: View {
+    @Binding var selectedCuisine: String?
+    @Binding var selectedEvent: String?
+    @Binding var selectedGender: String?
+    @Binding var selectedAgeRange: String?
+    @Binding var selectedDate: Date
+    var onApply: () -> Void
+
+    let cuisineOptions = ["Any", "American", "Mexican", "Italian", "Japanese", "Chinese", "Indian", "Thai", "Mediterranean"]
+    let eventOptions = ["Any", "Movie", "Amusement Park", "Hiking", "Museum", "Shopping"]
+    let genderOptions = ["Any", "Male", "Female", "Non-binary"]
+    let ageRanges = ["Any", "18-25", "26-35", "36-50", "50+"]
+    
+    var body: some View {
+        NavigationStack {
+            VStack {
+                Form {
+                    Section(header: Text("Meal Preferences")) {
+                        Picker("Cuisine", selection: Binding(
+                            get: { selectedCuisine ?? "Any" },
+                            set: { selectedCuisine = $0 == "Any" ? nil : $0 }
+                        )) {
+                            ForEach(cuisineOptions, id: \.self) { Text($0).tag($0) }
+                        }
+                        
+                        Picker("Event", selection: Binding(
+                            get: { selectedEvent ?? "Any" },
+                            set: { selectedEvent = $0 == "Any" ? nil : $0 }
+                        )) {
+                            ForEach(eventOptions, id: \.self) { Text($0).tag($0) }
+                        }
+                    }
+                    
+                    Section(header: Text("Demographic Preferences")) {
+                        Picker("Gender", selection: Binding(
+                            get: { selectedGender ?? "Any" },
+                            set: { selectedGender = $0 == "Any" ? nil : $0 }
+                        )) {
+                            ForEach(genderOptions, id: \.self) { Text($0).tag($0) }
+                        }
+                        
+                        Picker("Age Range", selection: Binding(
+                            get: { selectedAgeRange ?? "Any" },
+                            set: { selectedAgeRange = $0 == "Any" ? nil : $0 }
+                        )) {
+                            ForEach(ageRanges, id: \.self) { Text($0).tag($0) }
+                        }
+                    }
+                    
+                    Section(header: Text("Date")) {
+                        DatePicker("Date", selection: $selectedDate, displayedComponents: .date)
+                    }
+                }
+                
+                HStack {
+                    Spacer()
+                    Button(action: onApply) {
+                        Text("Apply Filters")
+                            .bold()
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(Color(hex: "#CD7741"))
+                            .foregroundColor(.white)
+                            .cornerRadius(30)
+                    }
+                    Spacer()
+                }
+                .padding()
+            }
+            .navigationBarTitle("Filter Requests", displayMode: .inline)
+        }
+    }
+}
+
 struct HomeView: View {
     @State private var userEmail: String = ""
     @State private var userName: String = ""
@@ -63,218 +137,214 @@ struct HomeView: View {
     @State private var connectionRequests: [ConnectionRequest] = []
     @State private var isLoading: Bool = true
     @State private var selectedDate = Date()
-    @State private var selectedMeal = "Lunch"
+    @State private var selectedCuisine: String? = nil
+    @State private var selectedEvent: String? = nil
+    @State private var selectedAgeRange: String? = nil
+    @State private var selectedGender: String? = nil
     @State private var currentIndex = 0
     @State private var userLocation: CLLocation?
-
+    @State private var showFilterSheet = false
     
-    let meals = ["Breakfast", "Lunch", "Dinner", "Coffee"]
+    
+    let cuisineOptions = ["American", "Mexican", "Italian", "Japanese", "Chinese", "Indian", "Thai", "Mediterranean"]
+    let eventOptions = ["Movie", "Amusement Park", "Hiking", "Museum", "Shopping"]
     let db = Firestore.firestore()
     
     var body: some View {
-            NavigationStack {
-                VStack(alignment: .leading) {
-                    HStack(spacing: 0) {
-                        Image("forkKnife")
+        NavigationStack {
+            VStack(alignment: .leading) {
+                HStack(spacing: 0) {
+                    Image("forkKnife")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 45, height: 45)
+                    
+                    Text("MEALBUDDY")
+                        .font(.largeTitle).bold()
+                        .foregroundColor(.black)
+                    Spacer()
+                    
+                    NavigationLink(destination: MainTabView(startingTab: 3)) {
+                        Image(systemName: "person.circle.fill")
                             .resizable()
                             .scaledToFit()
-                            .frame(width: 45, height: 45)
-                        
-                        Text("MEALBUDDY")
-                            .font(.largeTitle).bold()
-                            .foregroundColor(.black)
-                        Spacer()
-                        
-                        NavigationLink(destination: MainTabView(startingTab: 3)) {
-                            Image(systemName: "person.circle.fill")
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 40, height: 40)
-                                .foregroundColor(Color(hex: "#655745"))
-                        }
-                        
+                            .frame(width: 40, height: 40)
+                            .foregroundColor(Color(hex: "#655745"))
                     }
-                    .padding(.horizontal, 15)
-                    .padding(.top, 100)
-                    Text("Welcome, \(userName)!")
-                        .font(.title)
-                        .fontWeight(.bold)
-                        .foregroundColor(.black)
-                        .padding(.horizontal, 15)
                     
+                }
+                .padding(.horizontal, 15)
+                .padding(.top, 100)
+                Text("Welcome, \(userName)!")
+                    .font(.title)
+                    .fontWeight(.bold)
+                    .foregroundColor(.black)
+                    .padding(.horizontal, 15)
+                
+                
+                
+                HStack {
+                    
+                    Text("Filter")
+                        .font(.headline).bold()
+                        .foregroundColor(.black)
+                    Spacer()
+                    
+                    Button(action: { showFilterSheet = true }) {
+                        Image(systemName: "slider.horizontal.3")
+                            .font(.title2)
+                            .padding()
+                            .background(Circle().fill(Color(UIColor.systemBrown).opacity(0.2)))
+                            .foregroundColor(.brown)
+                    }
+                    
+                    
+                }
+                .padding(.horizontal)
+                
+                // Nearby Requests
+                Text("Nearby Requests")
+                    .font(.headline)
+                    .foregroundColor(.black)
+                    .padding(.horizontal)
+                    .fontWeight(.heavy)
+                
+                if isLoading {
+                    ProgressView("Loading requests...")
+                        .padding()
+                } else if connectionRequests.isEmpty {
+                    VStack{
+                        Text("No requests found? ")
+                            .font(.subheadline)
+                            .foregroundColor(.gray)
+                            .lineLimit(nil)
+                            .multilineTextAlignment(.center)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .frame(maxWidth: .infinity, alignment: .center)
+                        
+                        Text("Create a new request or update your location preferences!")
+                            .font(.subheadline)
+                            .foregroundColor(.gray)
+                            .lineLimit(nil)
+                            .multilineTextAlignment(.center)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .frame(maxWidth: .infinity, alignment: .center)
+                    }
+                    
+                    .padding()
+                    
+                    Spacer(minLength: 250)
+                    
+                } else {
                     HStack {
+                        Button(action: {
+                            if currentIndex > 0 { currentIndex -= 1 }
+                        }) {
+                            Image(systemName: "chevron.left")
+                                .font(.largeTitle)
+                                .foregroundColor(.brown)
+                        }
+                        Spacer()
+                        RequestCard(request: connectionRequests[currentIndex], userLocation: userLocation)
                         
-                        DatePicker("", selection: $selectedDate, displayedComponents: .date)
-                            .labelsHidden()
-                            .padding(5)
-                            .colorScheme(.dark)
-                            .background(RoundedRectangle(cornerRadius: 12).fill(Color(hex: "#655745")))
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 15)
-                            .tint(Color(hex: "#8B7355"))
-                            .accentColor(Color(hex: "#8B7355"))
-                        
-                        Menu {
-                                                ForEach(meals, id: \.self) { meal in
-                                                    Button(meal) {
-                                                        selectedMeal = meal
-                                                    }
-                                                }
-                                            } label: {
-                                                HStack {
-                                                    Text(selectedMeal)
-                                                        .lineLimit(1)
-                                                        .frame(minWidth: 80)
-                                                    Image(systemName: "chevron.down")
-                                                }
-                                                .frame(maxWidth: 120)
-                                                .padding(12)
-                                                .background(RoundedRectangle(cornerRadius: 12).fill(Color(hex: "#655745")))
-                                                .foregroundColor(Color(hex: "#F6F3EC"))
-                                            }
-                                            .padding(.horizontal, 5)
-
-                        
-                        Button(action: fetchConnectionRequests) {
-                            Image(systemName: "magnifyingglass")
-                                .font(.title2)
-                                .padding()
-                                .background(Circle().fill(Color(UIColor.systemBrown).opacity(0.2)))
+                        //                            Spacer()
+                        Button(action: {
+                            if currentIndex < connectionRequests.count - 1 { currentIndex += 1 }
+                        }) {
+                            Image(systemName: "chevron.right")
+                                .font(.largeTitle)
                                 .foregroundColor(.brown)
                         }
                     }
-                    .padding(.horizontal)
-                    
-                    // Nearby Requests
-                    Text("Nearby Requests")
+                    .padding()
+                }
+                
+                VStack(alignment: .leading) {
+                    Text("Create A New Request")
                         .font(.headline)
                         .foregroundColor(.black)
                         .padding(.horizontal)
-                        .fontWeight(.heavy)
                     
-                    if isLoading {
-                        ProgressView("Loading requests...")
-                            .padding()
-                    } else if connectionRequests.isEmpty {
-                        VStack{
-                            Text("No requests found? ")
-                                .font(.subheadline)
-                                .foregroundColor(.gray)
-                                .lineLimit(nil)
-                                .multilineTextAlignment(.center)
-                                .fixedSize(horizontal: false, vertical: true)
-                                .frame(maxWidth: .infinity, alignment: .center)
-                            
-                            Text("Create a new request or update your location preferences!")
-                                .font(.subheadline)
-                                .foregroundColor(.gray)
-                                .lineLimit(nil)
-                                .multilineTextAlignment(.center)
-                                .fixedSize(horizontal: false, vertical: true)
-                                .frame(maxWidth: .infinity, alignment: .center)
-                        }
-
-                        .padding()
-
-                        Spacer(minLength: 250)
+                    HStack {
+                        Text("Don’t feel like eating alone? Make a new request to match with people in your area")
+                            .font(.subheadline)
+                            .foregroundColor(.gray)
+                            .padding(.leading)
                         
-                    } else {
-                        HStack {
-                            Button(action: {
-                                if currentIndex > 0 { currentIndex -= 1 }
-                            }) {
-                                Image(systemName: "chevron.left")
-                                    .font(.largeTitle)
-                                    .foregroundColor(.brown)
-                            }
-                            Spacer()
-                            RequestCard(request: connectionRequests[currentIndex], userLocation: userLocation)
-                            
-//                            Spacer()
-                            Button(action: {
-                                if currentIndex < connectionRequests.count - 1 { currentIndex += 1 }
-                            }) {
-                                Image(systemName: "chevron.right")
-                                    .font(.largeTitle)
-                                    .foregroundColor(.brown)
-                            }
+                        Spacer()
+                        
+                        NavigationLink(destination: MainTabView(startingTab: 4)) {
+                            Image(systemName: "plus.circle.fill")
+                                .font(.largeTitle)
+                                .foregroundColor(.brown)
+                                .background(Circle().fill(Color(UIColor.systemBrown).opacity(0.2)))
                         }
-                        .padding()
                     }
                     
-                    VStack(alignment: .leading) {
-                        Text("Create A New Request")
-                            .font(.headline)
-                            .foregroundColor(.black)
-                            .padding(.horizontal)
-                        
-                        HStack {
-                            Text("Don’t feel like eating alone? Make a new request to match with people in your area")
-                                .font(.subheadline)
-                                .foregroundColor(.gray)
-                                .padding(.leading)
-                            
-                            Spacer()
-                            
-                            NavigationLink(destination: MainTabView(startingTab: 4)) {
-                                Image(systemName: "plus.circle.fill")
-                                    .font(.largeTitle)
-                                    .foregroundColor(.brown)
-                                    .background(Circle().fill(Color(UIColor.systemBrown).opacity(0.2)))
-                            }
-                        }
-                        
-                    }
-                    .padding()
-                    .background(RoundedRectangle(cornerRadius: 30).fill(Color(UIColor.systemBrown).opacity(0.2))) // Rounded rectangle around the whole section
-                    .padding(.bottom, 120) // Adjust bottom padding for better spacing between buttons
-
-                    
-                   Spacer()
                 }
                 .padding()
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(Color(hex: "#EEE2D2"))
-                .onAppear {
-                    fetchUser()
-                    fetchUserLocation()
-                    fetchConnectionRequests()
-                }
+                .background(RoundedRectangle(cornerRadius: 30).fill(Color(UIColor.systemBrown).opacity(0.2))) // Rounded rectangle around the whole section
+                .padding(.bottom, 120) // Adjust bottom padding for better spacing between buttons
+                
+                
+                Spacer()
             }
-            .navigationBarBackButtonHidden(true)
-            .toolbar {
-                    ToolbarItem(placement: .navigationBarLeading) {
-                        EmptyView() // Ensures the back button is completely removed
-                    }
+            .padding()
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Color(hex: "#EEE2D2"))
+            .onAppear {
+                fetchUser()
+                fetchUserLocation()
+                fetchConnectionRequests()
+            }
+        }
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                EmptyView() // Ensures the back button is completely removed
+            }
+        }
+        .sheet(isPresented: $showFilterSheet) {
+            FilterSheetView(
+                selectedCuisine: $selectedCuisine,
+                selectedEvent: $selectedEvent,
+                selectedGender: $selectedGender,
+                selectedAgeRange: $selectedAgeRange,
+                selectedDate: $selectedDate,
+                onApply: {
+                    showFilterSheet = false
+                    fetchConnectionRequests() // Fetch after applying filters
                 }
+            )
+        }
     }
     
     
-       func fetchUserLocation() {
-           if CLLocationManager.locationServicesEnabled() {
-               let locationManager = CLLocationManager()
-               locationManager.requestWhenInUseAuthorization()
-               
-               if let location = locationManager.location {
-                   userLocation = location
-                   updateLocationInFirestore(location: location)
-               }
-           }
-       }
-       
-       func updateLocationInFirestore(location: CLLocation) {
-           let geoPoint = GeoPoint(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
-           
-           db.collection("users").document(Auth.auth().currentUser?.uid ?? "unknown").updateData([
-               "location": geoPoint
-           ]) { error in
-               if let error = error {
-                   print("Error updating location: \(error.localizedDescription)")
-               } else {
-                   print("User location updated successfully.")
-               }
-           }
-       }
+    func fetchUserLocation() {
+        if CLLocationManager.locationServicesEnabled() {
+            let locationManager = CLLocationManager()
+            locationManager.requestWhenInUseAuthorization()
+            
+            if let location = locationManager.location {
+                userLocation = location
+                updateLocationInFirestore(location: location)
+            }
+        }
+    }
+    
+    func updateLocationInFirestore(location: CLLocation) {
+        let geoPoint = GeoPoint(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
+        
+        db.collection("users").document(Auth.auth().currentUser?.uid ?? "unknown").updateData([
+            "location": geoPoint
+        ]) { error in
+            if let error = error {
+                print("Error updating location: \(error.localizedDescription)")
+            } else {
+                print("User location updated successfully.")
+            }
+        }
+    }
     
     
     func fetchUser() {
@@ -286,50 +356,117 @@ struct HomeView: View {
     
     func fetchConnectionRequests() {
         isLoading = true
-        
+        print("Fetching connection requests...")
+
         let dateFormatter = DateFormatter()
-                dateFormatter.dateFormat = "yyyy-MM-dd"
-                let formattedDate = dateFormatter.string(from: selectedDate)
-        
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        let formattedDate = dateFormatter.string(from: selectedDate)
+
+        print("Selected date: \(formattedDate)")
+
         guard let userLocation = userLocation else {
             print("User location not available")
+            isLoading = false
             return
         }
-        
+
         let userRef = db.collection("users").document(Auth.auth().currentUser?.uid ?? "unknown")
-        
+
         userRef.getDocument { document, error in
-            if let document = document, document.exists {
-                let preferredRadius = document.data()?["preferred_radius"] as? Int ?? 10
-                
-                db.collection("requests")
-                    .whereField("meal", isEqualTo: selectedMeal)
-                    .whereField("date", isEqualTo: formattedDate)
-                    .getDocuments { snapshot, error in
-                        isLoading = false
-                        if let error = error {
-                            print("Error fetching requests: \(error.localizedDescription)")
-                        } else {
-                            connectionRequests = snapshot?.documents.compactMap { document in
-                                let request = try? document.data(as: ConnectionRequest.self)
-                                if let requestLocation = request?.location {
-                                    let requestCoordinate = CLLocation(latitude: requestLocation.latitude, longitude: requestLocation.longitude)
-                                    let distance = userLocation.distance(from: requestCoordinate) / 1609.34 // Convert meters to miles
-                                    
-                                    return distance <= Double(preferredRadius) ? request : nil
-                                }
-                                return nil
-                            } ?? []
+            if let error = error {
+                print("Error fetching user document: \(error.localizedDescription)")
+                isLoading = false
+                return
+            }
+
+            guard let document = document, document.exists else {
+                print("User document does not exist")
+                isLoading = false
+                return
+            }
+
+            let preferredRadius = document.data()?["preferred_radius"] as? Int ?? 10
+            print("Preferred radius: \(preferredRadius) miles")
+
+            var query: Query = db.collection("requests")
+
+            // Apply filters **only if "Any" is not selected**
+            if let cuisine = selectedCuisine, cuisine != "Any" {
+                query = query.whereField("cuisine", isEqualTo: cuisine)
+                print("Filtering by cuisine: \(cuisine)")
+            }
+            if let event = selectedEvent, event != "Any" {
+                query = query.whereField("event", isEqualTo: event)
+                print("Filtering by event: \(event)")
+            }
+            if let gender = selectedGender, gender != "Any" {
+                query = query.whereField("gender", isEqualTo: gender)
+                print("Filtering by gender: \(gender)")
+            }
+
+            // Apply **date filter**
+            query = query.whereField("date", isEqualTo: formattedDate)
+            print("Filtering by date: \(formattedDate)")
+
+            query.getDocuments { snapshot, error in
+                isLoading = false
+                if let error = error {
+                    print("Error fetching requests: \(error.localizedDescription)")
+                    return
+                }
+
+                guard let documents = snapshot?.documents, !documents.isEmpty else {
+                    print("No matching requests found")
+                    connectionRequests = []
+                    return
+                }
+
+                print("Found \(documents.count) request(s) before filtering by location and age")
+
+                connectionRequests = documents.compactMap { document in
+
+                    let request = try? document.data(as: ConnectionRequest.self)
+                    if let requestLocation = request?.location, let requestAge = request?.age{
+                        let requestCoordinate = CLLocation(latitude: requestLocation.latitude, longitude: requestLocation.longitude)
+                        let distance = userLocation.distance(from: requestCoordinate) / 1609.34 // Convert meters to miles
+                        
+                        print("Checking request: \(document.documentID) | Age: \(requestAge) | Distance: \(distance) miles")
+
+                        if let selectedRange = selectedAgeRange, selectedRange != "Any", !ageMatchesRange(requestAge, selectedRange) {
+                            print("Skipping \(document.documentID) - Age \(requestAge) does not match range \(selectedRange)")
+                            return nil
                         }
+
+                        if distance <= Double(preferredRadius) {
+                            print("Request \(document.documentID) matches all filters!")
+                            return request
+                        } else {
+                            print("Skipping \(document.documentID) - Outside preferred radius")
+                        }
+                    } else {
+                        print("Skipping invalid request (missing location or age)")
                     }
-            } else {
-                print("User preferences not found")
+                    return nil
+                }
+
+                print("Final requests count: \(connectionRequests.count)")
             }
         }
     }
 
-
+    func ageMatchesRange(_ age: Int, _ range: String) -> Bool {
+        switch range {
+        case "18-25": return age >= 18 && age <= 25
+        case "26-35": return age >= 26 && age <= 35
+        case "36-50": return age >= 36 && age <= 50
+        case "50+": return age >= 50
+        default: return true
+        }
+    }
+    
+    
 }
+
 struct Invite: Codable {
     var email: String
     var message: String
@@ -339,8 +476,9 @@ struct ConnectionRequest: Identifiable, Codable {
     @DocumentID var id: String?
     var email: String
     var cuisine: String
-    var diningOption: String
-    var meal: String
+    var event: String
+    var age: Int
+    var gender: String
     var blurb: String
     var date: String
     var location: GeoPoint
@@ -381,29 +519,6 @@ struct RequestCard: View {
                         .foregroundColor(Color(hex: "#655745"))
                         .padding(.horizontal, 10)
                     
-                    if request.diningOption == "Fast Food" {
-                        ZStack {
-                            Image(systemName: "wind")
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 30, height: 30)
-                                .offset(x: 30)
-                                .foregroundColor(Color(hex: "#655745"))
-                                .scaleEffect(x: -1, y: 1)
-                            
-                            Image(systemName: "figure.run")
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 30, height: 30)
-                                .foregroundColor(Color(hex: "#655745"))
-                        }
-                    } else {
-                        Image(systemName: "chair")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 40, height: 40)
-                            .foregroundColor(Color(hex: "#655745"))
-                    }
                 }
                 
                 Text(request.blurb.isEmpty ? "\"Looking for company!\"" : "\"" + request.blurb + "\"")

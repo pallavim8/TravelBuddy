@@ -1,4 +1,3 @@
-
 import SwiftUI
 import FirebaseFirestore
 import FirebaseAuth
@@ -8,6 +7,8 @@ struct ProfileView: View {
     @State private var priceRange: Double = 1
     @State private var username: String = ""
     @State private var email: String = ""
+    @State private var gender: String = ""
+    @State private var age: String = ""
     @State private var isSaved: Bool = false
     @State private var isChanged: Bool = false
     @State private var preferredRadius: Int = 10
@@ -15,37 +16,50 @@ struct ProfileView: View {
     @State private var initialUsername: String = ""
     @State private var initialDietaryRestrictions: [String] = []
     @State private var initialPriceRange: Double = 1
+    @State private var initialGender: String = ""
+    @State private var initialAge: String = ""
     @State private var navigateToHome = false
 
-    
     let db = Firestore.firestore()
     @State private var userID = Auth.auth().currentUser?.uid ?? "unknown"
-    
-    let dietaryOptions = ["Vegetarian", "Vegan", "Gluten-Free", "Dairy-Free", "Halal", "Kosher"]
-    
-    let radiusOptions = [5, 10, 15, 20]
 
-    
+    let dietaryOptions = ["Vegetarian", "Vegan", "Dairy-Free", "Halal", "Peanut Allergy"]
+    let radiusOptions = [5, 10, 15, 20]
+    let genderOptions = ["Male", "Female", "Non-binary", "Prefer not to say"]
+
     var body: some View {
-        
-        NavigationView{
-            
+        NavigationView {
             VStack {
                 NavigationLink(destination: HomeView(), isActive: $navigateToHome) {
                     EmptyView()
                 }
-                // Username TextField for editing
-                Text("Edit Profile").font(.largeTitle).padding()
-                Text("Username").font(.headline)
-                TextField("Enter your username", text: $username)
-                    .padding(.horizontal, 15)
-                    .padding(.vertical, 10)
-                    .background(Color(hex:"#DBC9B1"))
-                    .cornerRadius(30)
-                    .onChange(of: username) { _ in
-                        checkForChanges()
-                    }
                 
+                Text("Edit \(username)'s Profile").font(.largeTitle).padding()
+                
+                HStack{
+                    Text("Age").font(.headline).padding(.top)
+                    TextField("Enter your age", text: $age)
+                        .keyboardType(.numberPad)
+                        .padding()
+                        .background(Color(hex: "#DBC9B1"))
+                        .cornerRadius(30)
+                        .onChange(of: age) { _ in checkForChanges() }
+
+                    Text("Gender").font(.headline).padding(.top)
+                    Picker("Select Gender", selection: $gender) {
+                        ForEach(genderOptions, id: \.self) { option in
+                            Text(option).tag(option)
+                        }
+                    }
+                    .pickerStyle(MenuPickerStyle())
+                    .padding()
+                    .background(Color(hex: "#DBC9B1"))
+                    .cornerRadius(30)
+                    .onChange(of: gender) { _ in checkForChanges() }
+                }
+                
+                
+
                 Text("Select your Dietary Restrictions")
                     .font(.headline)
                     .padding(.top)
@@ -55,7 +69,6 @@ struct ProfileView: View {
                         get: { selectedDietaryRestrictions.contains(option) },
                         set: { isSelected in
                             if isSelected {
-                                
                                 if !selectedDietaryRestrictions.contains(option) {
                                     selectedDietaryRestrictions.append(option)
                                 }
@@ -66,10 +79,11 @@ struct ProfileView: View {
                         }
                     ))
                     .padding(.vertical, 4)
-                    .tint(Color(hex : "#685643"))
+                    .tint(Color(hex: "#685643"))
                     .padding(.horizontal, 10)
                 }
-                
+
+                // Preferred Radius
                 VStack(alignment: .leading, spacing: 10) {
                     Text("Preferred Radius (miles)")
                         .font(.headline)
@@ -88,26 +102,25 @@ struct ProfileView: View {
                     }
                 }
                 .padding(.horizontal)
-                
+
+                // Price Range
                 Text("Price Range (\(priceRangeText()))")
                     .font(.headline)
-                    .padding(.top)
                 
                 Slider(value: $priceRange, in: 1...3, step: 1)
                     .padding(.horizontal)
                     .tint(Color(hex: "#685643"))
-                    .onChange(of: priceRange) { _ in
-                        checkForChanges()
-                    }
-                
+                    .onChange(of: priceRange) { _ in checkForChanges() }
+
+                // Save Button
                 Button("Save Preferences") {
-                    
                     let dietaryRestrictions = selectedDietaryRestrictions.joined(separator: ", ")
-                    
                     
                     db.collection("users").document(userID).setData([
                         "username": username,
                         "email": email,
+                        "gender": gender,
+                        "age": Int(age) ?? 0,
                         "dietary_restrictions": dietaryRestrictions,
                         "price_range": priceRangeText(),
                         "preferred_radius": preferredRadius
@@ -130,7 +143,7 @@ struct ProfileView: View {
                 .foregroundColor(.white)
                 .cornerRadius(30)
                 .disabled(!isChanged)
-                
+
                 if isSaved {
                     Text("Preferences Saved!")
                         .foregroundColor(Color(hex: "#685643"))
@@ -138,11 +151,7 @@ struct ProfileView: View {
                         .transition(.opacity)
                         .padding()
                 }
-                Spacer()
-                Spacer()
-                Spacer()
-                Spacer()
-                Spacer()
+
                 Spacer()
             }
             .padding()
@@ -151,39 +160,25 @@ struct ProfileView: View {
             .onAppear {
                 fetchUserData()
             }
-//                .navigationBarItems(leading: Button(action: {
-//                navigateToHome = true
-//            }) {
-//                HStack {
-//                    Image(systemName: "chevron.left") // Default back button icon
-//                        .foregroundColor(.blue) // Matches default back button color
-//                    Text("Home")
-//                        .foregroundColor(.blue)
-//                }
-//            })
         }
         .navigationBarBackButtonHidden(true)
     }
-    
+
     func priceRangeText() -> String {
         switch priceRange {
-        case 1:
-            return "$"
-        case 2:
-            return "$$"
-        case 3:
-            return "$$$"
-        default:
-            return "$"
+        case 1: return "$"
+        case 2: return "$$"
+        case 3: return "$$$"
+        default: return "$"
         }
     }
-    
+
     func fetchUserData() {
         if let user = Auth.auth().currentUser {
             userID = user.uid
             username = user.displayName ?? ""
             email = user.email ?? ""
-            
+
             db.collection("users").document(userID).getDocument { document, error in
                 if let document = document, document.exists {
                     let data = document.data()
@@ -192,54 +187,61 @@ struct ProfileView: View {
                         .map { String($0).trimmingCharacters(in: .whitespacesAndNewlines) } ?? []
                     priceRange = priceRangeFromText(data?["price_range"] as? String ?? "$")
                     preferredRadius = data?["preferred_radius"] as? Int ?? 10
-                    
+                    gender = data?["gender"] as? String ?? ""
+                    age = data?["age"] as? String ?? ""
+
                     initialUsername = username
                     initialDietaryRestrictions = selectedDietaryRestrictions
                     initialPriceRange = priceRange
                     initialPreferredRadius = preferredRadius
+                    initialGender = gender
+                    initialAge = age
                 } else {
-                 
                     createBlankUserDocument()
                 }
             }
         }
     }
-    
-    func createBlankUserDocument() {
-        db.collection("users").document(userID).setData([
-            "username": "",
-            "email": email,
-            "dietary_restrictions": "",
-            "price_range": "$",
-            "preferred_radius": preferredRadius
-        ]) { error in
-            if let error = error {
-                print("Error creating blank user document: \(error.localizedDescription)")
-            } else {
-                print("Blank user document created successfully.")
-            }
-        }
-    }
 
-    func priceRangeFromText(_ text: String) -> Double {
-        switch text {
-        case "$$$":
-            return 3
-        case "$$":
-            return 2
-        case "$":
-            return 1
-        default:
-            return 1
-        }
-    }
-    
     func checkForChanges() {
         isChanged = (username != initialUsername ||
                      selectedDietaryRestrictions != initialDietaryRestrictions ||
-                     priceRange != initialPriceRange || preferredRadius != initialPreferredRadius)
+                     priceRange != initialPriceRange ||
+                     preferredRadius != initialPreferredRadius ||
+                     gender != initialGender ||
+                     age != initialAge)
     }
+    func createBlankUserDocument() {
+            db.collection("users").document(userID).setData([
+                "username": "",
+                "email": email,
+                "dietary_restrictions": "",
+                "price_range": "$",
+                "preferred_radius": preferredRadius
+            ]) { error in
+                if let error = error {
+                    print("Error creating blank user document: \(error.localizedDescription)")
+                } else {
+                    print("Blank user document created successfully.")
+                }
+            }
+        }
+
+        func priceRangeFromText(_ text: String) -> Double {
+            switch text {
+            case "$$$":
+                return 3
+            case "$$":
+                return 2
+            case "$":
+                return 1
+            default:
+                return 1
+            }
+        }
+
 }
+
 
 #Preview {
     ProfileView()

@@ -110,9 +110,9 @@ struct RequestCardView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text(request.meal)
-                .font(.headline)
-                .foregroundColor(Color(hex: "#66574A"))
+//            Text(request.meal)
+//                .font(.headline)
+//                .foregroundColor(Color(hex: "#66574A"))
             
             Text("Date: \(request.date)")
                 .font(.subheadline)

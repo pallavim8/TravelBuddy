@@ -117,22 +117,3 @@ struct ConnectView: View {
         }
     }
 }
-
-struct MockConnectionRequest {
-    static let sample = ConnectionRequest(
-        id: "sample-id",
-        email: "test@example.com",
-        cuisine: "Italian",
-        diningOption: "Dine-in",
-        meal: "Lunch",
-        blurb: "Looking for lunch buddies!",
-        date: "2025-02-22",
-        location: GeoPoint(latitude: 0, longitude: 0),
-        username: "Test User",
-        invitesSent: []
-    )
-}
-
-#Preview {
-    ConnectView(request: MockConnectionRequest.sample)
-}

@@ -1,11 +1,3 @@
-//
-//  NewRequestView.swift
-//  MealBuddy
-//
-//  Created by Chinju on 2/22/25.
-//
-
-
 import SwiftUI
 import Firebase
 import CoreLocation
@@ -16,166 +8,126 @@ struct NewRequestView: View {
     @State private var selectedDate = Date()
     @State private var selectedMeal: String = "Breakfast"
     @State private var selectedCuisine: String = "American"
+    @State private var selectedEvent: String = "Movie"
     @State private var diningOption: String = "Fast Food"
     @State private var isSubmitting = false
     @State private var submissionSuccess: Bool? = nil
     @State private var userEmail: String? = Auth.auth().currentUser?.email
     @State private var username: String? = Auth.auth().currentUser?.displayName
     @State private var userLocation: CLLocationCoordinate2D?
+    @State private var userAge: Int? = nil
+    @State private var userGender: String? = nil
 
     private let locationManager = LocationManager()
 
     let mealOptions = ["Breakfast", "Lunch", "Dinner", "Coffee"]
     let cuisineOptions = ["American", "Mexican", "Italian", "Japanese", "Chinese", "Indian", "Thai", "Mediterranean"]
+    let eventOptions = ["Movie", "Amusement Park", "Hiking", "Museum", "Shopping"]
     let diningOptions = ["Fast Food", "Sit-In"]
 
     var body: some View {
         NavigationView{
             VStack(spacing: 10) {
-                HStack(spacing: 0) {
-                    Image("forkKnife")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 45, height: 45)
-                    
-                    Text("MEALBUDDY")
-                        .font(.largeTitle).bold()
-                        .foregroundColor(.black)
-                    Spacer()
-                    NavigationLink(destination: ProfileView()) {
-                        Image(systemName: "person.circle.fill")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 40, height: 40)
-                            .foregroundColor(Color(hex: "#655745"))
-                    }
-                    
-                }
                 Text("Create a New Request")
                     .font(.largeTitle)
                     .fontWeight(.bold)
                 
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 14)
-                            .stroke(Color(hex: "#655745"), lineWidth: 2)
-                            .frame(height: 45)
-                        HStack{
-                            Text("Select Date: ").padding(.horizontal, 10)
-                            Spacer()
-                            DatePicker("", selection: $selectedDate, displayedComponents: .date)
-                                .labelsHidden()
-                                .colorScheme(.dark)
-                                .background(RoundedRectangle(cornerRadius: 12).fill(Color(hex: "#655745"))) // Existing background
-                                .foregroundColor(.white)
-                                .padding(.horizontal, 15)
-                                .tint(Color(hex: "#8B7355"))
-                                .accentColor(Color(hex: "#8B7355"))
-                        }
-                    }
-                    .padding(.horizontal, 15)
-
-                // Meal Type Picker
-                
-                Picker("Select Meal", selection: $selectedMeal) {
-                    ForEach(mealOptions, id: \.self) { meal in
-                        Text(meal).tag(meal)
+                ZStack {
+                    RoundedRectangle(cornerRadius: 14)
+                        .stroke(Color(hex: "#655745"), lineWidth: 2)
+                        .frame(height: 45)
+                    HStack{
+                        Text("Select Date: ").padding(.horizontal, 10)
+                        Spacer()
+                        DatePicker("", selection: $selectedDate, displayedComponents: .date)
+                            .labelsHidden()
+                            .colorScheme(.dark)
+                            .background(RoundedRectangle(cornerRadius: 12).fill(Color(hex: "#655745")))
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 15)
+                            .tint(Color(hex: "#8B7355"))
+                            .accentColor(Color(hex: "#8B7355"))
                     }
                 }
-                .pickerStyle(SegmentedPickerStyle())
-                .padding(.horizontal)
-                
+                .padding(.horizontal, 15)
+
+                // Event Type Picker
+                HStack {
+                    Text("Event Type")
+                        .font(.headline)
+                        .padding(.leading, 10)
+                    Picker("Select Event", selection: $selectedEvent) {
+                        ForEach(eventOptions, id: \ .self) { event in
+                            Text(event).tag(event)
+                        }
+                    }
+                    .pickerStyle(MenuPickerStyle())
+                    .styledInputField()
+                    .accentColor(Color(hex: "#655745"))
+                }
+
                 // Cuisine Type Dropdown
                 HStack {
                     Text("Cuisine Type")
                         .font(.headline)
                         .padding(.leading, 10)
                     Picker("Select Cuisine", selection: $selectedCuisine) {
-                        ForEach(cuisineOptions, id: \.self) { cuisine in
+                        ForEach(cuisineOptions, id: \ .self) { cuisine in
                             Text(cuisine).tag(cuisine)
                         }
                     }
-                    .pickerStyle(MenuPickerStyle()) // Dropdown menu
+                    .pickerStyle(MenuPickerStyle())
                     .styledInputField()
                     .accentColor(Color(hex: "#655745"))
                 }
-                
-                // Fast Food or Sit-In Picker
-                Picker("Dining Preference", selection: $diningOption) {
-                    ForEach(diningOptions, id: \.self) { option in
-                        Text(option).tag(option)
-                    }
-                }
-                .pickerStyle(SegmentedPickerStyle())
-                .padding(.horizontal)
-                .accentColor(Color(hex: "#655745"))
-                
-                // Short Blurb at the bottom
-                TextField("Add a short blurb (e.g., 'Craving sushi in town!')", text: $shortBlurb)
+
+                // Short Blurb
+                TextField("Add a short blurb (e.g., 'Excited for a movie night!')", text: $shortBlurb)
                     .styledInputField()
                 
                 // Live Preview Section
-                Text("Preview of your request:")
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, 10)
-                    .foregroundColor(Color(hex: "#655745"))
-                VStack {
-                    Image(systemName: "person.circle.fill")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 50, height: 50)
-                        .foregroundColor(Color(hex: "#655745"))
-                    
-                    Text(username!)
-                        .font(.title)
-                        .foregroundColor(Color(hex: "#655745"))
-                    
-                    HStack(spacing: 20) {
-                        Text("Looking for: " + selectedCuisine)
-                            .font(.headline)
-                            .foregroundColor(Color(hex: "#655745"))
-                            .padding(.horizontal, 10)
-                        
-                        if diningOption == "Fast Food" {
-                            ZStack {
-                                Image(systemName: "wind")
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 30, height: 30)
-                                    .offset(x: 30)
-                                    .foregroundColor(Color(hex: "#655745"))
-                                    .scaleEffect(x: -1, y: 1)
-                                
-                                Image(systemName: "figure.run")
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 30, height: 30)
-                                    .foregroundColor(Color(hex: "#655745"))
-                            }
-                            .padding(.horizontal, 5)
-                        } else {
-                            Image(systemName: "chair")
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 30, height: 30)
-                                .foregroundColor(Color(hex: "#655745"))
-                        }
-                    }
-                    
-                    Text(shortBlurb.isEmpty ? "\"Looking for company!\"" : "\"" + shortBlurb + "\"")
-                        .italic()
-                        .font(.headline)
-                        .foregroundColor(Color(hex: "#655745"))
-                        .padding(5)
-                    
-                    Text("x miles away")
-                        .font(.headline)
-                        .foregroundColor(Color(hex: "#655745"))
-                        
-                }
-                .frame(width: 280)
-                .padding()
-                .background(RoundedRectangle(cornerRadius: 15).fill(Color(UIColor.systemBrown).opacity(0.2)))
-                
+                               Text("Preview of your request:")
+                                   .frame(maxWidth: .infinity, alignment: .leading)
+                                   .padding(.horizontal, 10)
+                                   .foregroundColor(Color(hex: "#655745"))
+                               VStack {
+                                   Image(systemName: "person.circle.fill")
+                                       .resizable()
+                                       .scaledToFit()
+                                       .frame(width: 50, height: 50)
+                                       .foregroundColor(Color(hex: "#655745"))
+                                   
+                                   Text(username!)
+                                       .font(.title)
+                                       .foregroundColor(Color(hex: "#655745"))
+                                   
+                                   VStack(spacing: 20) {
+                                       Text("Cuisine: " + selectedCuisine)
+                                           .font(.headline)
+                                           .foregroundColor(Color(hex: "#655745"))
+                                           .padding(.horizontal, 10)
+                                       Text("Event: " + selectedEvent)
+                                           .font(.headline)
+                                           .foregroundColor(Color(hex: "#655745"))
+                                           .padding(.horizontal, 10)
+                                       
+                                    }
+                                   
+                                   Text(shortBlurb.isEmpty ? "\"Looking for company!\"" : "\"" + shortBlurb + "\"")
+                                       .italic()
+                                       .font(.headline)
+                                       .foregroundColor(Color(hex: "#655745"))
+                                       .padding(5)
+                                   
+                                   Text("x miles away")
+                                       .font(.headline)
+                                       .foregroundColor(Color(hex: "#655745"))
+                                       
+                               }
+                               .frame(width: 280)
+                               .padding()
+                               .background(RoundedRectangle(cornerRadius: 15).fill(Color(UIColor.systemBrown).opacity(0.2)))
+
                 // Submit Button
                 Button(action: submitRequest) {
                     if isSubmitting {
@@ -208,6 +160,7 @@ struct NewRequestView: View {
                 locationManager.requestLocation { location in
                     self.userLocation = location
                 }
+                fetchUserDetails()
             }
             .navigationBarBackButtonHidden(true)
         }
@@ -226,23 +179,23 @@ struct NewRequestView: View {
         }
 
         let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd" // Ensure consistent format
+        dateFormatter.dateFormat = "yyyy-MM-dd"
         let formattedDate = dateFormatter.string(from: selectedDate)
 
         let requestData: [String: Any] = [
             "blurb": shortBlurb,
-            "date": formattedDate,  // Store date as a string
-            "meal": selectedMeal,
+            "date": formattedDate,
+            "event": selectedEvent,
             "cuisine": selectedCuisine,
-            "diningOption": diningOption,
             "email": userEmail,
             "username": username,
+            "age": userAge ?? NSNull(),
+            "gender": userGender ?? NSNull(),
             "timestamp": FieldValue.serverTimestamp(),
             "location": userLocation != nil ? [
                 "latitude": userLocation!.latitude,
                 "longitude": userLocation!.longitude
-            ] : NSNull(),
-            "invitesSent": []
+            ] : NSNull()
         ]
         
         db.collection("requests").addDocument(data: requestData) { error in
@@ -261,20 +214,27 @@ struct NewRequestView: View {
     func clearForm() {
         shortBlurb = ""
         selectedDate = Date()
-        selectedMeal = "Breakfast"
+        selectedEvent = "Movie"
         selectedCuisine = "American"
-        diningOption = "Fast Food"
     }
+    
+    func fetchUserDetails() {
+        guard let userID = Auth.auth().currentUser?.uid else { return }
 
-    // Format Date
-    func formattedDate(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        return formatter.string(from: date)
+        let userRef = Firestore.firestore().collection("users").document(userID)
+        
+        userRef.getDocument { document, error in
+            if let document = document, document.exists {
+                let data = document.data()
+                self.userAge = data?["age"] as? Int
+                self.userGender = data?["gender"] as? String
+            } else {
+                print("User details not found")
+            }
+        }
     }
 }
 
-// SwiftUI Modifier for Input Fields
 extension View {
     func styledInputField() -> some View {
         self
@@ -287,7 +247,6 @@ extension View {
     }
 }
 
-// 🔥 Custom Location Manager to Get User's GPS Coordinates
 class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     private let locationManager = CLLocationManager()
     private var completion: ((CLLocationCoordinate2D?) -> Void)?
@@ -297,7 +256,8 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         locationManager.delegate = self
         locationManager.requestWhenInUseAuthorization() // Ask for permission
     }
-
+    
+    
     func requestLocation(completion: @escaping (CLLocationCoordinate2D?) -> Void) {
         self.completion = completion
         locationManager.requestLocation()
@@ -321,4 +281,3 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
 #Preview {
     NewRequestView()
 }
-
