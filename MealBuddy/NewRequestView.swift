@@ -177,6 +177,21 @@ struct NewRequestView: View {
             isSubmitting = false
             return
         }
+        
+        if userLocation == nil {
+                locationManager.requestLocation { location in
+                    self.userLocation = location
+                    self.finalizeRequestSubmission()
+                }
+            } else {
+                finalizeRequestSubmission()
+            }
+
+        
+    }
+    
+    func finalizeRequestSubmission() {
+        let db = Firestore.firestore()
 
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd"
@@ -187,8 +202,8 @@ struct NewRequestView: View {
             "date": formattedDate,
             "event": selectedEvent,
             "cuisine": selectedCuisine,
-            "email": userEmail,
-            "username": username,
+            "email": userEmail!,
+            "username": username!,
             "age": userAge ?? NSNull(),
             "gender": userGender ?? NSNull(),
             "invitesSent": [] as NSArray,
@@ -198,7 +213,7 @@ struct NewRequestView: View {
                 "longitude": userLocation!.longitude
             ] : NSNull()
         ]
-        
+
         db.collection("requests").addDocument(data: requestData) { error in
             isSubmitting = false
             if let error = error {
